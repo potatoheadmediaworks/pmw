@@ -85,7 +85,7 @@ section{padding:120px var(--pad)}
 .marquee::-webkit-scrollbar,.wall-col::-webkit-scrollbar{display:none}
 
 /* 3 · work */
-.work{background:var(--orange);padding-left:0;padding-right:0}
+.work{background:var(--white);color:var(--orange);padding-left:0;padding-right:0;border-top:1px solid var(--line)}
 .work .sec-top,.work .mega,.work-bottom{margin-left:var(--pad);margin-right:var(--pad)}
 .work .mega{margin-bottom:64px}
 .work .marquee{padding-bottom:10px}
@@ -99,9 +99,10 @@ section{padding:120px var(--pad)}
 .reel-btn:hover::after,.reel-btn:focus-visible::after{opacity:1;transform:none}
 .reel figcaption{padding-top:14px;font-size:14px}
 .reel figcaption span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;opacity:.75}
-.work-bottom{margin-top:56px;border-top:1px solid #0000002e;padding-top:22px;display:flex;justify-content:space-between;gap:20px;font-size:14px}
-.work .text-link:hover{color:var(--white)}
-.work .micro,.talk .micro{color:#111;opacity:.75}
+.work-bottom{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;display:flex;justify-content:space-between;gap:20px;font-size:14px}
+.work .text-link:hover{color:var(--black)}
+.work .micro{color:var(--orange);opacity:.75}
+.talk .micro{color:#111;opacity:.75}
 
 /* 4 · logos */
 .logos{padding-top:80px;padding-bottom:80px;border-bottom:1px solid var(--line)}
@@ -144,11 +145,13 @@ a.thumb:hover{transform:translateY(-4px)}
 /* 7 · carousels — auto-scrolling wall */
 .carousels{padding-left:0;padding-right:0;padding-bottom:0;overflow:hidden}
 .carousels .sec-top,.carousels .mega{margin-left:var(--pad);margin-right:var(--pad)}
+.wall{margin-top:clamp(32px,5vw,72px)}
 .wall{display:grid;grid-template-columns:repeat(3,1fr);height:min(112vh,1000px);overflow:hidden;border-top:1px solid var(--black);border-bottom:1px solid var(--black);background:var(--black);gap:1px}
 .wall-col{overflow:hidden;background:var(--white)}
 .wall-col .wall-set{display:flex;flex-direction:column;gap:1px;background:var(--black);width:100%;will-change:transform}
 .wall-col a{display:block}
 .wall-col img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover}
+
 
 /* 8 · long-form */
 .longform .mega{margin-bottom:60px}

@@ -85,7 +85,8 @@ section{padding:120px var(--pad)}
 .marquee::-webkit-scrollbar,.wall-col::-webkit-scrollbar{display:none}
 
 /* 3 · work */
-.work{background:var(--white);color:var(--orange);padding-left:0;padding-right:0;padding-bottom:64px;border-top:1px solid var(--line)}
+/* 3 · work */
+.work{background:var(--white);color:var(--black);padding-left:0;padding-right:0;padding-bottom:64px;border-top:1px solid var(--line)}
 .work .sec-top,.work .mega,.work-bottom{margin-left:var(--pad);margin-right:var(--pad)}
 .work .mega{margin-bottom:64px}
 .work .marquee{padding-bottom:10px}
@@ -95,13 +96,11 @@ section{padding:120px var(--pad)}
 .reel-btn{display:block;width:100%;padding:0;border:0;background:var(--black);position:relative;aspect-ratio:9/16;overflow:hidden}
 .reel-btn video,.reel-btn img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}
 .reel-btn:hover video{transform:scale(1.04)}
-.reel-btn::after{content:'watch on instagram ↗'}  /* edit the existing rule: change only the content value */
+.reel-btn::after{content:'watch on instagram ↗'}
 .reel-btn:hover::after,.reel-btn:focus-visible::after{opacity:1;transform:none}
 .reel figcaption{padding-top:14px;font-size:14px}
 .reel figcaption span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;opacity:.75}
 .work-bottom{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;display:flex;justify-content:space-between;gap:20px;font-size:14px}
-.work .text-link:hover{color:var(--black)}
-.work .micro{color:var(--orange);opacity:.75}
 .talk .micro{color:#111;opacity:.75}
 
 /* 4 · logos */

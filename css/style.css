@@ -105,8 +105,8 @@ section{padding:120px var(--pad)}
 
 /* 4 · logos */
 .logos{padding-top:40px;padding-bottom:80px;border-bottom:1px solid var(--line)}
-.logo-marquee .group{gap:48px;padding-right:48px;align-items:center}
-.logo-marquee img{height:96px;width:auto;flex:0 0 auto}
+.logo-marquee .group{gap:48px;padding-right:48px;align-items:center}/* logos use the same footprint as the hero's drifting fish image */
+.logo-marquee img{width:clamp(140px,15vw,230px);height:auto;aspect-ratio:16/10;object-fit:contain;flex:0 0 auto}
 
 /* 5 · services */
 .services .mega{margin-bottom:70px}
@@ -286,7 +286,7 @@ a.thumb:hover{transform:translateY(-4px)}
   .reel:nth-child(3n+2){margin-top:34px}
   .reel:nth-child(3n){margin-top:14px}
   .logo-marquee .group{gap:48px;padding-right:48px}
-  .logo-marquee img{height:42px}
+  .logo-marquee img{width:120px}
   .service-head{grid-template-columns:32px 1fr auto;gap:12px;padding:24px 0}
   .sv-title{font-size:30px}
   .sv-desc{padding-left:44px;font-size:14px;margin-top:-10px}
@@ -317,7 +317,8 @@ a.thumb:hover{transform:translateY(-4px)}
 }
 
 .logo-rows{display:grid;gap:22px}
-.logo-rows .logo-marquee .group{gap:80px}
+.logo-rows .logo-marquee .group{gap:48px;padding-right:48px}
+@media(max-width:760px){.logo-rows .logo-marquee .group{gap:28px;padding-right:28px}}
 @media(max-width:700px){.logo-rows{gap:14px}}
 /* hover card for reels */
 .reel-tip{position:fixed;z-index:60;width:300px;padding:22px;background:var(--white);color:var(--black);border:1px solid var(--black);pointer-events:none;opacity:0;transform:translateX(10px);transition:opacity .18s,transform .18s}

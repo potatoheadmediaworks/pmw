@@ -1,0 +1,282 @@
+'use strict';
+(() => {
+  const $ = id => document.getElementById(id);
+  const store = {
+    get: k => { try { return sessionStorage.getItem(k); } catch { return null; } },
+    set: (k, v) => { try { sessionStorage.setItem(k, v); } catch {} }
+  };
+
+  /* ================= sound (synthesised, opt-in, no audio files) ================= */
+  let actx = null, soundOn = false;
+  function ensureAudio() {
+    if (!actx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return false; actx = new C(); }
+    if (actx.state === 'suspended') actx.resume();
+    return true;
+  }
+  function blip(f1, f2, dur, type = 'square', vol = .05) {
+    if (!soundOn || !ensureAudio()) return;
+    const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + .02);
+  }
+  const sfx = {
+    click: () => blip(620, 240, .07),
+    open: () => { blip(300, 600, .09, 'triangle', .06); },
+    close: () => { blip(600, 300, .09, 'triangle', .06); },
+    tick: () => blip(900, 700, .03, 'sine', .035)
+  };
+  const prompt = $('sound-prompt'), toggle = $('sound-toggle');
+  function setSound(on, persist = true) {
+    soundOn = on;
+    toggle.hidden = false; toggle.setAttribute('aria-pressed', String(on)); toggle.textContent = on ? 'sound on' : 'sound off';
+    if (persist) store.set('pmw-sound', on ? 'on' : 'off');
+    if (on) { ensureAudio(); sfx.open(); }
+  }
+  const saved = store.get('pmw-sound');
+  if (saved === 'on') toggle.hidden = false, toggle.textContent = 'sound off'; // needs a click to resume audio (browser rule)
+  else if (saved === 'off') toggle.hidden = false;
+  else {
+    setTimeout(() => { prompt.hidden = false; }, 1500);
+    // if ignored, tuck the question away into the small toggle
+    setTimeout(() => { if (!prompt.hidden) { prompt.hidden = true; toggle.hidden = false; } }, 14000);
+  }
+  $('sound-yes').addEventListener('click', () => { prompt.hidden = true; setSound(true); });
+  $('sound-no').addEventListener('click', () => { prompt.hidden = true; setSound(false); });
+  toggle.addEventListener('click', () => setSound(!soundOn));
+  document.addEventListener('click', e => { if (e.target.closest('a, button') && !e.target.closest('#sound-toggle, #sound-yes')) sfx.click(); });
+  let lastTickY = 0;
+  addEventListener('scroll', () => { if (Math.abs(scrollY - lastTickY) > 420) { lastTickY = scrollY; sfx.tick(); } }, { passive: true });
+
+  /* ================= mobile menu ================= */
+  const menuBtn = document.querySelector('.menu-toggle'), nav = $('navigation');
+  const closeMenu = () => { nav.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); };
+  menuBtn.addEventListener('click', () => {
+    const open = menuBtn.getAttribute('aria-expanded') !== 'true';
+    menuBtn.setAttribute('aria-expanded', String(open)); nav.classList.toggle('open', open);
+  });
+  nav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+  /* ================= hero: cursor image trail (the drifting images are pure CSS) ================= */
+  const hero = $('home'), trail = $('trail');
+  const trailSrc = [0, 1, 2, 3].map(i => `assets/trail/t${i}.jpg`);
+  trailSrc.forEach(s => { const i = new Image(); i.src = s; });
+  let ti = 0, last = null;
+  function spawn(x, y) {
+    const el = new Image();
+    el.src = trailSrc[ti++ % trailSrc.length]; el.alt = ''; el.className = 'trail-image';
+    el.style.left = (x - 75) + 'px'; el.style.top = (y - 100) + 'px';
+    trail.appendChild(el);
+    const a = el.animate([
+      { opacity: .5, transform: 'scale(.5)', filter: 'blur(7px)' },
+      { opacity: 1, transform: 'scale(1)', filter: 'blur(0)', offset: .35 },
+      { opacity: 0, transform: 'scale(.2)', filter: 'blur(0)' }
+    ], { duration: 1100, easing: 'cubic-bezier(.2,.7,.3,1)' });
+    a.onfinish = () => el.remove();
+  }
+  hero.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    const r = hero.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    if (last && Math.hypot(x - last.x, y - last.y) < 82) return;
+    last = { x, y }; spawn(x, y);
+  });
+  hero.addEventListener('pointerleave', () => { last = null; });
+  hero.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'touch') return;
+    const r = hero.getBoundingClientRect(); spawn(e.clientX - r.left, e.clientY - r.top);
+  });
+  /* ================= reels (Instagram) ================= */
+  // Shortcodes from the reel links (tracking parameters removed).
+  const REEL_IDS = ['DWBprWIAEdl','DYXNreIhFGb','DehTFIwBoU2','DdjeBPmPxW3','DTStdrCDZdn','DTL24ZnkRRu','DfKQxOHIjkx','DbbJE1YNKKe','Devit6bT1U4','DeHXB8Pz5f3','DTu1-uYkyRx','DfLB2Ozyr0Q','DXwi_9USMiv'];
+  const REELS = REEL_IDS.map((id, i) => ({
+    n: String(i + 1).padStart(2, '0'), id,
+    thumb: `assets/placeholder/reel-${String(i + 1).padStart(2, '0')}.jpg`, // swap for real cover images
+    url: `https://www.instagram.com/reel/${id}/`,
+    title: `Reel ${String(i + 1).padStart(2, '0')}`,
+    blurb: 'Placeholder: add the client, the brief and what we delivered for this reel.',
+    tags: ['Personal Branding', 'Scripting', 'Edit']
+  }));
+  const reelGroup = $('reel-group');
+ REELS.forEach(r => {
+  const fig = document.createElement('figure'); fig.className = 'reel';
+  fig.innerHTML =
+    `<a class="reel-btn" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch reel ${r.n} on Instagram (opens in a new tab)">` +
+    `<video src="assets/reels/${r.n}.mp4" poster="${r.thumb}" muted loop playsinline preload="none"></video></a>` +
+    `<figcaption><span>FROM THE PORTFOLIO / ${r.n}</span><strong>Watch reel ${r.n}</strong></figcaption>`;
+  reelGroup.appendChild(fig);
+ });
+
+ /* ---- services: 3 reel links under each service (indexes into REELS, 0 = reel 01) ---- */
+const SERVICE_REELS = {
+  sv1: [0, 1, 2],
+  sv2: [3, 4, 5],
+  sv3: [6, 7, 8],
+  sv4: [9, 10, 11],
+  sv5: [12, 0, 1],
+  sv6: [2, 3, 4]
+};
+Object.entries(SERVICE_REELS).forEach(([id, list]) => {
+  const box = document.querySelector(`#${id} .thumbs`); if (!box) return;
+  box.innerHTML = list.map(i => {
+    const r = REELS[i];
+    return `<a class="thumb" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch reel ${r.n} on Instagram (opens in a new tab)"><img src="${r.thumb}" alt="" loading="lazy"><span>▶ watch</span></a>`;
+  }).join('');
+});
+  /* ================= shared marquee: clone group for a seamless loop ================= */
+  const marquees = [...document.querySelectorAll('.marquee')];
+  marquees.forEach(m => {
+    const gA = m.querySelector('.group'), gB = gA.cloneNode(true);
+    gB.removeAttribute('id'); gB.setAttribute('aria-hidden', 'true');
+    gB.querySelectorAll('button, a').forEach(b => { b.tabIndex = -1; });
+    gB.querySelectorAll('img').forEach(i => { i.alt = ''; });
+    gA.parentNode.appendChild(gB);
+  });
+  function setSpeeds() {
+    marquees.forEach(m => {
+      const g = m.querySelector('.group'), pps = Number(m.dataset.pps) || 45;
+      m.querySelector('.track').style.setProperty('--marquee-time', Math.max(25, g.offsetWidth / pps) + 's');
+    });
+  }
+  setSpeeds(); addEventListener('resize', setSpeeds); addEventListener('load', setSpeeds);
+  const vio = new IntersectionObserver(es => es.forEach(e => {
+  e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
+}));
+document.querySelectorAll('.reel-btn video').forEach(v => vio.observe(v));
+/* ---- hover card: pops up to the LEFT of a reel (flips right if there is no room) ---- */
+const tip = document.createElement('aside');
+tip.className = 'reel-tip'; tip.setAttribute('aria-hidden', 'true');
+tip.innerHTML = '<p class="rt-eyebrow"></p><h3 class="rt-title"></h3><p class="rt-blurb"></p><ul class="rt-tags"></ul><span class="rt-cta">Want one like this? <b>→</b></span><span class="rt-ig">click to open on Instagram ↗</span>';
+document.body.appendChild(tip);
+const tq = s => tip.querySelector(s);
+function showTip(a) {
+  const r = REELS.find(x => x.url === a.href); if (!r) return;
+  tq('.rt-eyebrow').textContent = `FROM THE PORTFOLIO / ${r.n}`;
+  tq('.rt-title').textContent = r.title;
+  tq('.rt-blurb').textContent = r.blurb;
+  tq('.rt-tags').replaceChildren(...r.tags.map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
+  const b = a.getBoundingClientRect(), w = tip.offsetWidth, gap = 16;
+  let left = b.left - w - gap, side = 'left';
+  if (left < 12) { left = b.right + gap; side = 'right'; }
+  left = Math.min(left, innerWidth - w - 12);
+  const top = Math.max(12, Math.min(b.top, innerHeight - tip.offsetHeight - 12));
+  tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  tip.dataset.side = side; hoverReel = true; tip.classList.add('show');
+}
+let hoverReel = false; // auto-scroll waits while a reel card is open
+const hideTip = () => { hoverReel = false; tip.classList.remove('show'); };
+document.addEventListener('pointerover', e => {
+  if (e.pointerType !== 'mouse') return;
+  const a = e.target.closest('.reel-btn, a.thumb'); a ? showTip(a) : hideTip();
+});
+document.addEventListener('pointerleave', hideTip);
+addEventListener('wheel', hideTip, { passive: true });
+
+  /* ================= carousel wall: JS-driven, direction follows page scroll =================
+     cols 1 & 3 travel top→bottom, col 2 bottom→top while the page scrolls down;
+     everything reverses while the page scrolls up. */
+  const wall = document.querySelector('.wall');
+  const cols = [...document.querySelectorAll('.wall-col')].map((col, i) => {
+    const a = col.querySelector('.wall-set'), b = a.cloneNode(true);
+    b.setAttribute('aria-hidden', 'true'); b.querySelectorAll('a').forEach(l => { l.tabIndex = -1; });
+    b.querySelectorAll('img').forEach(im => { im.alt = ''; });
+    const strip = document.createElement('div'); strip.className = 'wall-set';
+    strip.append(...a.children, ...b.children);
+    a.replaceWith(strip);
+    return { strip, dir: i === 1 ? -1 : 1, speed: i === 1 ? 46 : i === 2 ? 34 : 40, y: 0, half: 0 };
+  });
+  let wallDir = 1, wallVis = false, wallHover = false, wallLast = 0, lastY = scrollY, wallBoost = 0;
+  const measure = () => cols.forEach(c => { c.half = c.strip.scrollHeight / 2; if (c.dir > 0 && !c.y) c.y = -c.half; });
+  measure(); addEventListener('load', measure); addEventListener('resize', measure);
+  if (wall) {
+    new IntersectionObserver(en => { wallVis = en[0].isIntersecting; }, { threshold: 0 }).observe(wall);
+    wall.addEventListener('pointerenter', () => { wallHover = true; });
+    wall.addEventListener('pointerleave', () => { wallHover = false; });
+  }
+  addEventListener('scroll', () => {
+    const d = scrollY - lastY;
+    if (Math.abs(d) > 0.5) { wallDir = d > 0 ? 1 : -1; wallBoost = Math.min(Math.abs(d), 60); }
+    lastY = scrollY;
+  }, { passive: true });
+  let wallDirSmooth = 1;
+  function wallTick(t) {
+    const dt = Math.min((t - (wallLast || t)) / 1000, 0.05); wallLast = t;
+    wallDirSmooth += (wallDir - wallDirSmooth) * Math.min(1, dt * 6); // smooth reversal
+    wallBoost *= 0.92;
+    if (wallVis && !wallHover) cols.forEach(c => {
+      if (!c.half) c.half = c.strip.scrollHeight / 2;
+      c.y += c.dir * wallDirSmooth * (c.speed + wallBoost * 3) * dt;
+      if (c.y >= 0) c.y -= c.half; else if (c.y <= -c.half) c.y += c.half;
+      c.strip.style.transform = `translate3d(0,${c.y.toFixed(2)}px,0)`;
+    });
+    requestAnimationFrame(wallTick);
+  }
+  requestAnimationFrame(wallTick);
+
+
+  /* ================= services accordion ================= */
+  document.querySelectorAll('.service-head').forEach(btn => btn.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    open ? sfx.open() : sfx.close();
+  }));
+
+  /* ================= YouTube (inline once a video ID is set via data-yt) ================= */
+  document.querySelectorAll('.yt').forEach(a => a.addEventListener('click', e => {
+    const id = (a.dataset.yt || '').trim(); if (!id) return; // no ID yet: normal link
+    e.preventDefault();
+    const f = document.createElement('iframe');
+    f.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
+    f.allow = 'autoplay; encrypted-media; picture-in-picture'; f.allowFullscreen = true; f.title = a.getAttribute('aria-label') || 'YouTube video';
+    a.replaceChildren(f); a.removeAttribute('href');
+  }));
+
+  /* ================= chat widget ================= */
+  const chat = $('chat'), launch = $('chat-launch');
+  function setChat(open) {
+    chat.hidden = !open; launch.setAttribute('aria-expanded', String(open)); open ? sfx.open() : sfx.close();
+  }
+  launch.addEventListener('click', () => setChat(chat.hidden));
+  $('chat-close').addEventListener('click', () => { setChat(false); launch.focus({ preventScroll: true }); });
+  chat.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', () => setChat(false)));
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    closeMenu(); if (!chat.hidden) setChat(false);
+  });
+
+  /* ================= auto-scroll: the page scrolls itself; any input pauses it ================= */
+  const autoBtn = $('auto-toggle');
+  const auto = { on: false, pos: 0, last: 0, speed: 80, userOff: store.get('pmw-auto') === 'off', timer: null };
+  const maxY = () => document.documentElement.scrollHeight - innerHeight;
+  const blocked = () => document.hidden || hoverReel || !chat.hidden;
+  function label() { autoBtn.hidden = false; autoBtn.setAttribute('aria-pressed', String(auto.on)); autoBtn.textContent = auto.on ? 'auto-scroll on' : 'auto-scroll off'; }
+  function step(t) {
+    if (!auto.on) return;
+    const dt = Math.min(.05, (t - auto.last) / 1000); auto.last = t;
+    if (!blocked()) {
+      if (Math.abs(scrollY - auto.pos) > 3) auto.pos = scrollY;      // something else moved the page: follow it
+      auto.pos += auto.speed * dt;
+      scrollTo({ top: auto.pos, behavior: 'instant' });
+      if (auto.pos >= maxY() - 1) { stopAuto(); return; }
+    } else auto.pos = scrollY;
+    requestAnimationFrame(step);
+  }
+  function startAuto() { if (auto.on) return; clearTimeout(auto.timer); auto.on = true; auto.pos = scrollY; auto.last = performance.now(); label(); requestAnimationFrame(step); }
+  function stopAuto() { auto.on = false; label(); }
+  function interrupted() {                                           // user took over
+    if (!auto.on) return; stopAuto();
+    if (!auto.userOff) { clearTimeout(auto.timer); auto.timer = setTimeout(() => { if (!auto.userOff && scrollY < maxY() - 4) startAuto(); }, 8000); }
+  }
+  ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(ev => addEventListener(ev, e => {
+    if (e.target && e.target.closest && e.target.closest('#auto-toggle')) return;
+    if (ev === 'keydown' && !['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' ', 'Tab'].includes(e.key)) return;
+    interrupted();
+  }, { passive: true }));
+  autoBtn.addEventListener('click', () => {
+    if (auto.on) { auto.userOff = true; store.set('pmw-auto', 'off'); clearTimeout(auto.timer); stopAuto(); }
+    else { auto.userOff = false; store.set('pmw-auto', 'on'); if (scrollY >= maxY() - 4) scrollTo({ top: 0, behavior: 'instant' }); startAuto(); }
+  });
+  label();
+  if (!auto.userOff) setTimeout(() => { if (scrollY < maxY() - 4) startAuto(); }, 2800);
+
+  $('year').textContent = String(new Date().getFullYear());
+})();

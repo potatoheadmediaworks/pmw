@@ -143,7 +143,7 @@ a.thumb:hover{transform:translateY(-4px)}
 .steps p{font-size:14px;line-height:1.65;color:#bdb8b2;max-width:280px}
 
 /* 7 · carousels — auto-scrolling wall */
-.carousels{padding-left:0;padding-right:0;padding-bottom:0;overflow:hidden}
+.carousels{padding-left:0;padding-right:0;padding-bottom:5;overflow:hidden}
 .carousels .sec-top,.carousels .mega{margin-left:var(--pad);margin-right:var(--pad)}
 .wall{margin-top:clamp(32px,5vw,72px)}
 .wall{display:grid;grid-template-columns:repeat(3,1fr);height:min(112vh,1000px);overflow:hidden;border-top:1px solid var(--black);border-bottom:1px solid var(--black);background:var(--black);gap:1px}

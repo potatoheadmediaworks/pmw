@@ -153,16 +153,9 @@ a.thumb:hover{transform:translateY(-4px)}
 
 
 /* 8 · long-form */
-<section id="longform" class="longform" aria-labelledby="long-title">
-  <div class="long-grid">
-    <div class="long-copy">
-      <p class="eyebrow">The long view</p>
-      <h2 id="long-title" class="mega">longer stories, <span>told properly.</span></h2>
-    </div>
-    <!-- Replace data-yt with the YouTube video ID to play inline -->
-    <a class="yt" href="https://youtu.be/BqnenWDx94Y" target="_blank" rel="noopener" data-yt="BqnenWDx94Y" aria-label="Watch our long-form video on YouTube"><img src="assets/placeholder/longform-01.jpg" alt="Long-form video thumbnail" width="960" height="540" loading="lazy"><span class="play" aria-hidden="true">▶</span></a>
-  </div>
-</section>
+.long-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(32px,5vw,80px);align-items:center}
+.long-copy .eyebrow{margin-bottom:34px}
+.longform .mega{font-size:clamp(40px,5.4vw,88px)}
 
 /* 9 · results */
 .results{border-top:1px solid var(--line)}

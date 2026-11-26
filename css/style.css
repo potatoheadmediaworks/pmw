@@ -256,6 +256,7 @@ a.thumb:hover{transform:translateY(-4px)}
 }
 
 /* mobile */
+
 @media(max-width:760px){
   :root{--header-h:68px;--pad:6%}
   section{padding:76px var(--pad)}
@@ -281,6 +282,7 @@ a.thumb:hover{transform:translateY(-4px)}
   .reel:nth-child(3n+2){margin-top:34px}
   .reel:nth-child(3n){margin-top:14px}
   .logo-marquee .group{gap:48px;padding-right:48px}
+  .logos{padding-top:64px}
   .logo-marquee img{width:120px}
   .service-head{grid-template-columns:32px 1fr auto;gap:12px;padding:24px 0}
   .sv-title{font-size:30px}

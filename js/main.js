@@ -242,12 +242,31 @@
   }
   requestAnimationFrame(wallTick);
 
-  /* ================= services accordion ================= */
-  document.querySelectorAll('.service-head').forEach(btn => btn.addEventListener('click', () => {
-    const open = btn.getAttribute('aria-expanded') !== 'true';
-    btn.setAttribute('aria-expanded', String(open));
-    open ? sfx.open() : sfx.close();
-  }));
+   /* ================= services: hover to preview, click to keep open ================= */
+  const canHover = matchMedia('(hover: hover)').matches;
+  let peekY = 0;
+  const peeking = () => !!document.querySelector('.service.peek');
+  document.querySelectorAll('.service').forEach(item => {
+    const btn = item.querySelector('.service-head');
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(open));
+      if (!open) { item.classList.remove('peek'); item.dataset.hold = '1'; } // closed by click: stays shut until the mouse leaves
+      open ? sfx.open() : sfx.close();
+    });
+    if (!canHover) return;
+    btn.addEventListener('pointerenter', e => {
+      if (e.pointerType !== 'mouse' || item.dataset.hold || btn.getAttribute('aria-expanded') === 'true') return;
+      document.querySelectorAll('.service.peek').forEach(s => { if (s !== item) s.classList.remove('peek'); });
+      item.classList.add('peek'); peekY = scrollY;
+    });
+    item.addEventListener('pointerleave', () => { item.classList.remove('peek'); delete item.dataset.hold; });
+  });
+  // scrolling closes a hover preview (clicked ones stay open)
+  addEventListener('scroll', () => {
+    if (Math.abs(scrollY - peekY) < 40) return;
+    document.querySelectorAll('.service.peek').forEach(s => s.classList.remove('peek'));
+  }, { passive: true });
 
   /* ================= YouTube (inline once a video ID is set via data-yt) ================= */
   document.querySelectorAll('.yt').forEach(a => a.addEventListener('click', e => {

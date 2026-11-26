@@ -295,7 +295,7 @@
   const autoBtn = $('auto-toggle');
   const auto = { on: false, pos: 0, last: 0, speed: 80, userOff: store.get('pmw-auto') === 'off', timer: null };
   const maxY = () => document.documentElement.scrollHeight - innerHeight;
-  const blocked = () => document.hidden || hoverReel || !chat.hidden;
+  const blocked = () => document.hidden || hoverReel || !chat.hidden || peeking();
   function label() { autoBtn.hidden = false; autoBtn.setAttribute('aria-pressed', String(auto.on)); autoBtn.textContent = auto.on ? 'auto-scroll on' : 'auto-scroll off'; }
   function step(t) {
     if (!auto.on) return;

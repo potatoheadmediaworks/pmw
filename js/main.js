@@ -86,47 +86,65 @@
     const r = hero.getBoundingClientRect(); spawn(e.clientX - r.left, e.clientY - r.top);
   });
 
-  /* ================= reels (Instagram) ================= */
-  // Shortcodes from the reel links. Videos live at assets/placeholder/reel-01.mp4, reel-02.mp4 ...
-  const REEL_IDS = ['DWBprWIAEdl','DYXNreIhFGb','DehTFIwBoU2','DdjeBPmPxW3','DTStdrCDZdn','DTL24ZnkRRu','DfKQxOHIjkx','DbbJE1YNKKe','Devit6bT1U4','DeHXB8Pz5f3','DTu1-uYkyRx','DfLB2Ozyr0Q','DXwi_9USMiv'];
-  const REELS = REEL_IDS.map((id, i) => {
-    const n = String(i + 1).padStart(2, '0');
-    return {
-      n, id,
-      thumb: `assets/placeholder/reel-${n}.jpg`,
-      video: `assets/placeholder/reel-${n}.mp4`,
-      url: `https://www.instagram.com/reel/${id}/`,
-      title: `Reel ${n}`,
-      blurb: 'Placeholder: add the client, the brief and what we delivered for this reel.',
-      tags: ['Personal Branding', 'Scripting', 'Edit']
-    };
-  });
+  /* ================= reels ================= */
+  // Video files live in assets/placeholder/ as reel-01.mp4, reel-02.mp4 …
+  // url: null = no Instagram link (offline reel). file: reuse another reel's video.
+  const REELS = [
+    { n: '01', client: 'Sakina Hatim',     url: 'https://www.instagram.com/reel/DWBprWIAEdl/' },
+    { n: '02', client: 'Yazad',            url: 'https://www.instagram.com/p/DfUfIoRI-L2/' },
+    { n: '03', client: 'Crystal',          url: 'https://www.instagram.com/p/DfJCfH8xpIB/' },
+    { n: '04', client: 'Harleen',          url: 'https://www.instagram.com/reel/DTStdrCDZdn/' },
+    { n: '05', client: 'Dom',              url: 'https://www.instagram.com/p/Deht-AwScQi/' },
+    { n: '06', client: 'Selene',           url: 'https://www.instagram.com/p/DehTFIwBoU2/' },
+    { n: '07', client: 'Harleen',          url: 'https://www.instagram.com/reel/DTL24ZnkRRu/' },
+    { n: '08', client: 'PotatoHead Media', url: 'https://www.instagram.com/reel/De_JgCbzcyP/' },
+    { n: '09', client: 'Bishoy',           url: null },
+    { n: '10', client: 'PotatoHead Media', url: 'https://www.instagram.com/reel/DeHXB8Pz5f3/' },
+    { n: '11', client: 'Lemonade India',   url: 'https://www.instagram.com/reel/DTu1-uYkyRx/' },
+    { n: '12', client: 'Selene',           url: 'https://www.instagram.com/p/DehTFIwBoU2/', file: '06' },
+    { n: '13', client: 'Selene',           url: 'https://www.instagram.com/reel/Df7WmokM_fR/' },
+    { n: '14', client: 'Yazad',            url: 'https://www.instagram.com/p/DfwOKkQoaE1/' },
+    { n: '15', client: 'Gurleen',          url: 'https://www.instagram.com/p/De4Iy2xydtZ/' },
+    { n: '16', client: 'Sakina Hatim',     url: 'https://www.instagram.com/p/DYXNreIhFGb/' },
+    { n: '17', client: 'Yazad',            url: 'https://www.instagram.com/p/DgFuADzs3Jk/' },
+    { n: '18', client: 'PotatoHead Media', url: 'https://www.instagram.com/p/DfpLulJMvRR/' }
+  ];
 
-  // Work section: videos play directly (no thumbnail)
+  // Which reels sit under each service
+  const SERVICES = {
+    sv1: { name: 'Branding & Positioning',  reels: ['01', '02', '03'] },
+    sv2: { name: 'Scripting & Research',    reels: ['04', '05', '06'] },
+    sv3: { name: 'Pre-Production',          reels: ['07', '08', '09'] },
+    sv4: { name: 'Post-Production & Edits', reels: ['10', '11', '12'] },
+    sv5: { name: 'Distribution',            reels: ['13', '14', '15'] },
+    sv6: { name: 'Full Agency Support',     reels: ['16', '17', '18'] }
+  };
+
+  const byN = Object.fromEntries(REELS.map(r => [r.n, r]));
+  REELS.forEach((r, i) => { r.i = i; r.video = `assets/placeholder/reel-${r.file || r.n}.mp4`; });
+  Object.values(SERVICES).forEach(s => s.reels.forEach(n => { byN[n].service = s.name; }));
+
+  // Link to Instagram if there is a URL, otherwise a plain box
+  const reelBox = (r, cls, inner) => r.url
+    ? `<a class="${cls}" data-i="${r.i}" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch ${r.client}'s reel on Instagram (opens in a new tab)">${inner}</a>`
+    : `<div class="${cls}" data-i="${r.i}" role="group" aria-label="${r.client}'s reel">${inner}</div>`;
+
+  // Work section: every unique reel, playing directly
   const reelGroup = $('reel-group');
-  REELS.forEach(r => {
+  REELS.filter(r => !r.file).forEach(r => {
     const fig = document.createElement('figure'); fig.className = 'reel';
     fig.innerHTML =
-      `<a class="reel-btn" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch reel ${r.n} on Instagram (opens in a new tab)">` +
-      `<video src="${r.video}#t=0.1" muted loop playsinline autoplay preload="metadata"></video></a>` +
-      `<figcaption><span>FROM THE PORTFOLIO / ${r.n}</span><strong>Watch reel ${r.n}</strong></figcaption>`;
+      reelBox(r, 'reel-btn', `<video src="${r.video}#t=0.1" muted loop playsinline autoplay preload="metadata"></video>`) +
+      `<figcaption><span>${r.service}</span><strong>${r.client}</strong></figcaption>`;
     reelGroup.appendChild(fig);
   });
 
-  /* ---- services: 3 reels under each service (indexes into REELS, 0 = reel 01) ---- */
-  const SERVICE_REELS = {
-    sv1: [0, 1, 2],
-    sv2: [3, 4, 5],
-    sv3: [6, 7, 8],
-    sv4: [9, 10, 11],
-    sv5: [12, 0, 1],
-    sv6: [2, 3, 4]
-  };
-  Object.entries(SERVICE_REELS).forEach(([id, list]) => {
+  // Services: three reels under each service
+  Object.entries(SERVICES).forEach(([id, s]) => {
     const box = document.querySelector(`#${id} .thumbs`); if (!box) return;
-    box.innerHTML = list.map(i => {
-      const r = REELS[i];
-      return `<a class="thumb" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch reel ${r.n} on Instagram (opens in a new tab)"><video src="${r.video}" poster="${r.thumb}" muted loop playsinline preload="none"></video><span>▶ watch</span></a>`;
+    box.innerHTML = s.reels.map(n => {
+      const r = byN[n];
+      return reelBox(r, 'thumb', `<video src="${r.video}#t=0.1" muted loop playsinline preload="metadata"></video>${r.url ? '<span>▶ watch</span>' : ''}`);
     }).join('');
   });
 
@@ -151,7 +169,7 @@
   const vio = new IntersectionObserver(es => es.forEach(e => {
     e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
   }));
-  document.querySelectorAll('.reel-btn video, a.thumb video').forEach(v => vio.observe(v));
+  document.querySelectorAll('.reel-btn video, .thumb video').forEach(v => vio.observe(v));
 
   /* ---- hover card: pops up to the LEFT of a reel (flips right if there is no room) ---- */
   const tip = document.createElement('aside');
@@ -160,13 +178,14 @@
   document.body.appendChild(tip);
   const tq = s => tip.querySelector(s);
   let hoverReel = false; // auto-scroll waits while a reel card is open
-  function showTip(a) {
-    const r = REELS.find(x => x.url === a.href); if (!r) return;
-    tq('.rt-eyebrow').textContent = `FROM THE PORTFOLIO / ${r.n}`;
-    tq('.rt-title').textContent = r.title;
-    tq('.rt-blurb').textContent = r.blurb;
-    tq('.rt-tags').replaceChildren(...r.tags.map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
-    const b = a.getBoundingClientRect(), w = tip.offsetWidth, gap = 16;
+  function showTip(el) {
+    const r = REELS[el.dataset.i]; if (!r) return;
+    tq('.rt-eyebrow').textContent = r.service || '';
+    tq('.rt-title').textContent = r.client;
+    tq('.rt-blurb').textContent = r.blurb || 'Placeholder: add the brief and what we delivered for this reel.';
+    tq('.rt-tags').replaceChildren(...[r.service].filter(Boolean).map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
+    tq('.rt-ig').hidden = !r.url;
+    const b = el.getBoundingClientRect(), w = tip.offsetWidth, gap = 16;
     let left = b.left - w - gap, side = 'left';
     if (left < 12) { left = b.right + gap; side = 'right'; }
     left = Math.min(left, innerWidth - w - 12);
@@ -177,7 +196,7 @@
   const hideTip = () => { hoverReel = false; tip.classList.remove('show'); };
   document.addEventListener('pointerover', e => {
     if (e.pointerType !== 'mouse') return;
-    const a = e.target.closest('.reel-btn, a.thumb'); a ? showTip(a) : hideTip();
+    const el = e.target.closest('.reel-btn, .thumb[data-i]'); el ? showTip(el) : hideTip();
   });
   document.addEventListener('pointerleave', hideTip);
   addEventListener('wheel', hideTip, { passive: true });

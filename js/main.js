@@ -57,7 +57,7 @@
   });
   nav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
 
-  /* ================= hero: cursor image trail (the drifting images are pure CSS) ================= */
+  /* ================= hero: cursor image trail ================= */
   const hero = $('home'), trail = $('trail');
   const trailSrc = [0, 1, 2, 3].map(i => `assets/trail/t${i}.jpg`);
   trailSrc.forEach(s => { const i = new Image(); i.src = s; });
@@ -85,43 +85,51 @@
     if (e.pointerType !== 'touch') return;
     const r = hero.getBoundingClientRect(); spawn(e.clientX - r.left, e.clientY - r.top);
   });
-  /* ================= reels (Instagram) ================= */
-  // Shortcodes from the reel links (tracking parameters removed).
-  const REEL_IDS = ['DWBprWIAEdl','DYXNreIhFGb','DehTFIwBoU2','DdjeBPmPxW3','DTStdrCDZdn','DTL24ZnkRRu','DfKQxOHIjkx','DbbJE1YNKKe','Devit6bT1U4','DeHXB8Pz5f3','DTu1-uYkyRx','DfLB2Ozyr0Q','DXwi_9USMiv'];
-  const REELS = REEL_IDS.map((id, i) => ({
-    n: String(i + 1).padStart(2, '0'), id,
-    thumb: `assets/placeholder/reel-${String(i + 1).padStart(2, '0')}.jpg`, // swap for real cover images
-    url: `https://www.instagram.com/reel/${id}/`,
-    title: `Reel ${String(i + 1).padStart(2, '0')}`,
-    blurb: 'Placeholder: add the client, the brief and what we delivered for this reel.',
-    tags: ['Personal Branding', 'Scripting', 'Edit']
-  }));
-  const reelGroup = $('reel-group');
- REELS.forEach(r => {
-  const fig = document.createElement('figure'); fig.className = 'reel';
-  fig.innerHTML =
-    `<a class="reel-btn" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch reel ${r.n} on Instagram (opens in a new tab)">` +
-    `<video src="assets/reels/${r.n}.mp4" poster="${r.thumb}" muted loop playsinline preload="none"></video></a>` +
-    `<figcaption><span>FROM THE PORTFOLIO / ${r.n}</span><strong>Watch reel ${r.n}</strong></figcaption>`;
-  reelGroup.appendChild(fig);
- });
 
- /* ---- services: 3 reel links under each service (indexes into REELS, 0 = reel 01) ---- */
-const SERVICE_REELS = {
-  sv1: [0, 1, 2],
-  sv2: [3, 4, 5],
-  sv3: [6, 7, 8],
-  sv4: [9, 10, 11],
-  sv5: [12, 0, 1],
-  sv6: [2, 3, 4]
-};
-Object.entries(SERVICE_REELS).forEach(([id, list]) => {
-  const box = document.querySelector(`#${id} .thumbs`); if (!box) return;
-  box.innerHTML = list.map(i => {
-    const r = REELS[i];
-    return `<a class="thumb" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch reel ${r.n} on Instagram (opens in a new tab)"><img src="${r.thumb}" alt="" loading="lazy"><span>▶ watch</span></a>`;
-  }).join('');
-});
+  /* ================= reels (Instagram) ================= */
+  // Shortcodes from the reel links. Videos live at assets/placeholder/reel-01.mp4, reel-02.mp4 ...
+  const REEL_IDS = ['DWBprWIAEdl','DYXNreIhFGb','DehTFIwBoU2','DdjeBPmPxW3','DTStdrCDZdn','DTL24ZnkRRu','DfKQxOHIjkx','DbbJE1YNKKe','Devit6bT1U4','DeHXB8Pz5f3','DTu1-uYkyRx','DfLB2Ozyr0Q','DXwi_9USMiv'];
+  const REELS = REEL_IDS.map((id, i) => {
+    const n = String(i + 1).padStart(2, '0');
+    return {
+      n, id,
+      thumb: `assets/placeholder/reel-${n}.jpg`,
+      video: `assets/placeholder/reel-${n}.mp4`,
+      url: `https://www.instagram.com/reel/${id}/`,
+      title: `Reel ${n}`,
+      blurb: 'Placeholder: add the client, the brief and what we delivered for this reel.',
+      tags: ['Personal Branding', 'Scripting', 'Edit']
+    };
+  });
+
+  // Work section: videos play directly (no thumbnail)
+  const reelGroup = $('reel-group');
+  REELS.forEach(r => {
+    const fig = document.createElement('figure'); fig.className = 'reel';
+    fig.innerHTML =
+      `<a class="reel-btn" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch reel ${r.n} on Instagram (opens in a new tab)">` +
+      `<video src="${r.video}#t=0.1" muted loop playsinline autoplay preload="metadata"></video></a>` +
+      `<figcaption><span>FROM THE PORTFOLIO / ${r.n}</span><strong>Watch reel ${r.n}</strong></figcaption>`;
+    reelGroup.appendChild(fig);
+  });
+
+  /* ---- services: 3 reels under each service (indexes into REELS, 0 = reel 01) ---- */
+  const SERVICE_REELS = {
+    sv1: [0, 1, 2],
+    sv2: [3, 4, 5],
+    sv3: [6, 7, 8],
+    sv4: [9, 10, 11],
+    sv5: [12, 0, 1],
+    sv6: [2, 3, 4]
+  };
+  Object.entries(SERVICE_REELS).forEach(([id, list]) => {
+    const box = document.querySelector(`#${id} .thumbs`); if (!box) return;
+    box.innerHTML = list.map(i => {
+      const r = REELS[i];
+      return `<a class="thumb" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch reel ${r.n} on Instagram (opens in a new tab)"><video src="${r.video}" poster="${r.thumb}" muted loop playsinline preload="none"></video><span>▶ watch</span></a>`;
+    }).join('');
+  });
+
   /* ================= shared marquee: clone group for a seamless loop ================= */
   const marquees = [...document.querySelectorAll('.marquee')];
   marquees.forEach(m => {
@@ -138,38 +146,41 @@ Object.entries(SERVICE_REELS).forEach(([id, list]) => {
     });
   }
   setSpeeds(); addEventListener('resize', setSpeeds); addEventListener('load', setSpeeds);
+
+  // play videos only while visible (marquee + open service panels)
   const vio = new IntersectionObserver(es => es.forEach(e => {
-  e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
-}));
-document.querySelectorAll('.reel-btn video').forEach(v => vio.observe(v));
-/* ---- hover card: pops up to the LEFT of a reel (flips right if there is no room) ---- */
-const tip = document.createElement('aside');
-tip.className = 'reel-tip'; tip.setAttribute('aria-hidden', 'true');
-tip.innerHTML = '<p class="rt-eyebrow"></p><h3 class="rt-title"></h3><p class="rt-blurb"></p><ul class="rt-tags"></ul><span class="rt-cta">Want one like this? <b>→</b></span><span class="rt-ig">click to open on Instagram ↗</span>';
-document.body.appendChild(tip);
-const tq = s => tip.querySelector(s);
-function showTip(a) {
-  const r = REELS.find(x => x.url === a.href); if (!r) return;
-  tq('.rt-eyebrow').textContent = `FROM THE PORTFOLIO / ${r.n}`;
-  tq('.rt-title').textContent = r.title;
-  tq('.rt-blurb').textContent = r.blurb;
-  tq('.rt-tags').replaceChildren(...r.tags.map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
-  const b = a.getBoundingClientRect(), w = tip.offsetWidth, gap = 16;
-  let left = b.left - w - gap, side = 'left';
-  if (left < 12) { left = b.right + gap; side = 'right'; }
-  left = Math.min(left, innerWidth - w - 12);
-  const top = Math.max(12, Math.min(b.top, innerHeight - tip.offsetHeight - 12));
-  tip.style.left = left + 'px'; tip.style.top = top + 'px';
-  tip.dataset.side = side; hoverReel = true; tip.classList.add('show');
-}
-let hoverReel = false; // auto-scroll waits while a reel card is open
-const hideTip = () => { hoverReel = false; tip.classList.remove('show'); };
-document.addEventListener('pointerover', e => {
-  if (e.pointerType !== 'mouse') return;
-  const a = e.target.closest('.reel-btn, a.thumb'); a ? showTip(a) : hideTip();
-});
-document.addEventListener('pointerleave', hideTip);
-addEventListener('wheel', hideTip, { passive: true });
+    e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
+  }));
+  document.querySelectorAll('.reel-btn video, a.thumb video').forEach(v => vio.observe(v));
+
+  /* ---- hover card: pops up to the LEFT of a reel (flips right if there is no room) ---- */
+  const tip = document.createElement('aside');
+  tip.className = 'reel-tip'; tip.setAttribute('aria-hidden', 'true');
+  tip.innerHTML = '<p class="rt-eyebrow"></p><h3 class="rt-title"></h3><p class="rt-blurb"></p><ul class="rt-tags"></ul><span class="rt-cta">Want one like this? <b>→</b></span><span class="rt-ig">click to open on Instagram ↗</span>';
+  document.body.appendChild(tip);
+  const tq = s => tip.querySelector(s);
+  let hoverReel = false; // auto-scroll waits while a reel card is open
+  function showTip(a) {
+    const r = REELS.find(x => x.url === a.href); if (!r) return;
+    tq('.rt-eyebrow').textContent = `FROM THE PORTFOLIO / ${r.n}`;
+    tq('.rt-title').textContent = r.title;
+    tq('.rt-blurb').textContent = r.blurb;
+    tq('.rt-tags').replaceChildren(...r.tags.map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
+    const b = a.getBoundingClientRect(), w = tip.offsetWidth, gap = 16;
+    let left = b.left - w - gap, side = 'left';
+    if (left < 12) { left = b.right + gap; side = 'right'; }
+    left = Math.min(left, innerWidth - w - 12);
+    const top = Math.max(12, Math.min(b.top, innerHeight - tip.offsetHeight - 12));
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+    tip.dataset.side = side; hoverReel = true; tip.classList.add('show');
+  }
+  const hideTip = () => { hoverReel = false; tip.classList.remove('show'); };
+  document.addEventListener('pointerover', e => {
+    if (e.pointerType !== 'mouse') return;
+    const a = e.target.closest('.reel-btn, a.thumb'); a ? showTip(a) : hideTip();
+  });
+  document.addEventListener('pointerleave', hideTip);
+  addEventListener('wheel', hideTip, { passive: true });
 
   /* ================= carousel wall: JS-driven, direction follows page scroll =================
      cols 1 & 3 travel top→bottom, col 2 bottom→top while the page scrolls down;
@@ -212,7 +223,6 @@ addEventListener('wheel', hideTip, { passive: true });
   }
   requestAnimationFrame(wallTick);
 
-
   /* ================= services accordion ================= */
   document.querySelectorAll('.service-head').forEach(btn => btn.addEventListener('click', () => {
     const open = btn.getAttribute('aria-expanded') !== 'true';
@@ -253,7 +263,7 @@ addEventListener('wheel', hideTip, { passive: true });
     if (!auto.on) return;
     const dt = Math.min(.05, (t - auto.last) / 1000); auto.last = t;
     if (!blocked()) {
-      if (Math.abs(scrollY - auto.pos) > 3) auto.pos = scrollY;      // something else moved the page: follow it
+      if (Math.abs(scrollY - auto.pos) > 3) auto.pos = scrollY; // something else moved the page: follow it
       auto.pos += auto.speed * dt;
       scrollTo({ top: auto.pos, behavior: 'instant' });
       if (auto.pos >= maxY() - 1) { stopAuto(); return; }
@@ -262,7 +272,7 @@ addEventListener('wheel', hideTip, { passive: true });
   }
   function startAuto() { if (auto.on) return; clearTimeout(auto.timer); auto.on = true; auto.pos = scrollY; auto.last = performance.now(); label(); requestAnimationFrame(step); }
   function stopAuto() { auto.on = false; label(); }
-  function interrupted() {                                           // user took over
+  function interrupted() { // user took over
     if (!auto.on) return; stopAuto();
     if (!auto.userOff) { clearTimeout(auto.timer); auto.timer = setTimeout(() => { if (!auto.userOff && scrollY < maxY() - 4) startAuto(); }, 8000); }
   }

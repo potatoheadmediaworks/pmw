@@ -153,13 +153,16 @@ a.thumb:hover{transform:translateY(-4px)}
 
 
 /* 8 · long-form */
-.longform .mega{margin-bottom:60px}
-.yt-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.yt{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:#000}
-.yt img,.yt iframe{width:100%;height:100%;object-fit:cover;border:0;display:block;transition:transform .5s}
-.yt:hover img{transform:scale(1.03)}
-.yt .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:var(--white);color:var(--black);display:grid;place-items:center;font-size:22px;padding-left:4px;transition:background .2s}
-.yt:hover .play{background:var(--orange)}
+<section id="longform" class="longform" aria-labelledby="long-title">
+  <div class="long-grid">
+    <div class="long-copy">
+      <p class="eyebrow">The long view</p>
+      <h2 id="long-title" class="mega">longer stories, <span>told properly.</span></h2>
+    </div>
+    <!-- Replace data-yt with the YouTube video ID to play inline -->
+    <a class="yt" href="https://youtu.be/BqnenWDx94Y" target="_blank" rel="noopener" data-yt="BqnenWDx94Y" aria-label="Watch our long-form video on YouTube"><img src="assets/placeholder/longform-01.jpg" alt="Long-form video thumbnail" width="960" height="540" loading="lazy"><span class="play" aria-hidden="true">▶</span></a>
+  </div>
+</section>
 
 /* 9 · results */
 .results{border-top:1px solid var(--line)}

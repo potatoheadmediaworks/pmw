@@ -58,13 +58,26 @@
   nav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
 
   /* ================= hero: cursor image trail ================= */
+  // Images live in assets/trail/ named t0.jpg, t1.jpg … Change TRAIL_COUNT when you add more.
+  const TRAIL_COUNT = 15;
   const hero = $('home'), trail = $('trail');
-  const trailSrc = [0, 1, 2, 3].map(i => `assets/trail/t${i}.jpg`);
-  trailSrc.forEach(s => { const i = new Image(); i.src = s; });
-  let ti = 0, last = null;
+  const trailSrc = Array.from({ length: TRAIL_COUNT }, (_, i) => `assets/trail/t${i}.jpg`);
+  const trailReady = [];
+  // preload after the page loads (keeps the hero fast); files that fail to load are skipped
+  addEventListener('load', () => trailSrc.forEach(s => {
+    const im = new Image(); im.onload = () => trailReady.push(s); im.src = s;
+  }));
+  // shuffled order, no repeats until every image has been shown
+  let deck = [];
+  const nextSrc = () => {
+    if (!deck.length) deck = [...trailReady].sort(() => Math.random() - .5);
+    return deck.pop();
+  };
+  let last = null;
   function spawn(x, y) {
+    const src = nextSrc(); if (!src) return;
     const el = new Image();
-    el.src = trailSrc[ti++ % trailSrc.length]; el.alt = ''; el.className = 'trail-image';
+    el.src = src; el.alt = ''; el.className = 'trail-image';
     el.style.left = (x - 75) + 'px'; el.style.top = (y - 100) + 'px';
     trail.appendChild(el);
     const a = el.animate([
@@ -88,26 +101,28 @@
 
   /* ================= reels ================= */
   // Video files live in assets/placeholder/ as reel-01.mp4, reel-02.mp4 …
+  // handle: the client's Instagram username, shown in the popup (leave '' to hide it)
+  // blurb:  one or two lines about the client / what we did (leave '' to hide it)
   // url: null = no Instagram link (offline reel). file: reuse another reel's video.
   const REELS = [
-    { n: '01', client: 'Sakina Hatim',     url: 'https://www.instagram.com/reel/DWBprWIAEdl/' },
-    { n: '02', client: 'Yazad',            url: 'https://www.instagram.com/p/DfUfIoRI-L2/' },
-    { n: '03', client: 'Crystal',          url: 'https://www.instagram.com/p/DfJCfH8xpIB/' },
-    { n: '04', client: 'Harleen',          url: 'https://www.instagram.com/reel/DTStdrCDZdn/' },
-    { n: '05', client: 'Dom',              url: 'https://www.instagram.com/p/Deht-AwScQi/' },
-    { n: '06', client: 'Selene',           url: 'https://www.instagram.com/p/DehTFIwBoU2/' },
-    { n: '07', client: 'Harleen',          url: 'https://www.instagram.com/reel/DTL24ZnkRRu/' },
-    { n: '08', client: 'PotatoHead Media', url: 'https://www.instagram.com/reel/De_JgCbzcyP/' },
-    { n: '09', client: 'Bishoy',           url: null },
-    { n: '10', client: 'PotatoHead Media', url: 'https://www.instagram.com/reel/DeHXB8Pz5f3/' },
-    { n: '11', client: 'Lemonade India',   url: 'https://www.instagram.com/reel/DTu1-uYkyRx/' },
-    { n: '12', client: 'Selene',           url: 'https://www.instagram.com/p/DehTFIwBoU2/', file: '06' },
-    { n: '13', client: 'Selene',           url: 'https://www.instagram.com/reel/Df7WmokM_fR/' },
-    { n: '14', client: 'Yazad',            url: 'https://www.instagram.com/p/DfwOKkQoaE1/' },
-    { n: '15', client: 'Gurleen',          url: 'https://www.instagram.com/p/De4Iy2xydtZ/' },
-    { n: '16', client: 'Sakina Hatim',     url: 'https://www.instagram.com/p/DYXNreIhFGb/' },
-    { n: '17', client: 'Yazad',            url: 'https://www.instagram.com/p/DgFuADzs3Jk/' },
-    { n: '18', client: 'PotatoHead Media', url: 'https://www.instagram.com/p/DfpLulJMvRR/' }
+    { n: '01', client: 'Sakina Hatim',     handle: '', blurb: '', url: 'https://www.instagram.com/reel/DWBprWIAEdl/' },
+    { n: '02', client: 'Yazad',            handle: '', blurb: '', url: 'https://www.instagram.com/p/DfUfIoRI-L2/' },
+    { n: '03', client: 'Crystal',          handle: '', blurb: 'Real estate agent in California.', url: 'https://www.instagram.com/p/DfJCfH8xpIB/' },
+    { n: '04', client: 'Harleen',          handle: '', blurb: 'Finance creator. 7K+ followers and weekly consultation sign-ups in 3 months.', url: 'https://www.instagram.com/reel/DTStdrCDZdn/' },
+    { n: '05', client: 'Dom',              handle: '', blurb: '', url: 'https://www.instagram.com/p/Deht-AwScQi/' },
+    { n: '06', client: 'Selene',           handle: '', blurb: 'Realtor. 10K+ followers and 3× reach vs. high-production content.', url: 'https://www.instagram.com/p/DehTFIwBoU2/' },
+    { n: '07', client: 'Harleen',          handle: '', blurb: 'Finance creator. 7K+ followers and weekly consultation sign-ups in 3 months.', url: 'https://www.instagram.com/reel/DTL24ZnkRRu/' },
+    { n: '08', client: 'PotatoHead Media', handle: '@potatoheadmedia', blurb: 'Our own channel: a look behind the scenes of how we work.', url: 'https://www.instagram.com/reel/De_JgCbzcyP/' },
+    { n: '09', client: 'Bishoy',           handle: '', blurb: '', url: null },
+    { n: '10', client: 'PotatoHead Media', handle: '@potatoheadmedia', blurb: 'Our own channel: a look behind the scenes of how we work.', url: 'https://www.instagram.com/reel/DeHXB8Pz5f3/' },
+    { n: '11', client: 'Lemonade India',   handle: '', blurb: 'Organic content outperforming paid ads.', url: 'https://www.instagram.com/reel/DTu1-uYkyRx/' },
+    { n: '12', client: 'Selene',           handle: '', blurb: 'Realtor. 10K+ followers and 3× reach vs. high-production content.', url: 'https://www.instagram.com/p/DehTFIwBoU2/', file: '06' },
+    { n: '13', client: 'Selene',           handle: '', blurb: 'Realtor. 10K+ followers and 3× reach vs. high-production content.', url: 'https://www.instagram.com/reel/Df7WmokM_fR/' },
+    { n: '14', client: 'Yazad',            handle: '', blurb: '', url: 'https://www.instagram.com/p/DfwOKkQoaE1/' },
+    { n: '15', client: 'Gurleen',          handle: '', blurb: '', url: 'https://www.instagram.com/p/De4Iy2xydtZ/' },
+    { n: '16', client: 'Sakina Hatim',     handle: '', blurb: '', url: 'https://www.instagram.com/p/DYXNreIhFGb/' },
+    { n: '17', client: 'Yazad',            handle: '', blurb: '', url: 'https://www.instagram.com/p/DgFuADzs3Jk/' },
+    { n: '18', client: 'PotatoHead Media', handle: '@potatoheadmedia', blurb: 'Our own channel: a look behind the scenes of how we work.', url: 'https://www.instagram.com/p/DfpLulJMvRR/' }
   ];
 
   // Which reels sit under each service
@@ -126,8 +141,8 @@
 
   // Link to Instagram if there is a URL, otherwise a plain box
   const reelBox = (r, cls, inner) => r.url
-    ? `<a class="${cls}" data-i="${r.i}" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch ${r.client}'s reel on Instagram (opens in a new tab)">${inner}</a>`
-    : `<div class="${cls}" data-i="${r.i}" role="group" aria-label="${r.client}'s reel">${inner}</div>`;
+    ? `<a class="${cls}" data-i="${r.i}" data-name="${r.client}" href="${r.url}" target="_blank" rel="noopener" aria-label="Watch ${r.client}'s reel on Instagram (opens in a new tab)">${inner}</a>`
+    : `<div class="${cls}" data-i="${r.i}" data-name="${r.client}" role="group" aria-label="${r.client}'s reel">${inner}</div>`;
 
   // Work section: every unique reel, playing directly
   const reelGroup = $('reel-group');
@@ -165,16 +180,46 @@
   }
   setSpeeds(); addEventListener('resize', setSpeeds); addEventListener('load', setSpeeds);
 
-  // play videos only while visible (marquee + open service panels)
+  /* ================= reel marquee: JS-driven so viewers can scrub it ================= */
+  const reelMarquee = $('marquee'), reelTrack = reelMarquee.querySelector('.track'), scrub = $('reel-scrub');
+  const reelState = { pos: 0, half: 0, last: 0, hover: false, holdUntil: 0, pps: Number(reelMarquee.dataset.pps) || 45 };
+  const measureReels = () => { reelState.half = reelMarquee.querySelector('.group').offsetWidth; };
+  measureReels(); addEventListener('resize', measureReels); addEventListener('load', measureReels);
+  const setReelPos = p => {
+    const h = reelState.half || 1;
+    reelState.pos = ((p % h) + h) % h; // loop seamlessly
+    reelTrack.style.transform = `translate3d(${-reelState.pos}px,0,0)`;
+    if (scrub) scrub.value = Math.round(reelState.pos / h * 1000);
+  };
+  const holdReels = () => { reelState.holdUntil = performance.now() + 2500; }; // resume 2.5s after the viewer stops
+  reelMarquee.addEventListener('pointerenter', () => { reelState.hover = true; });
+  reelMarquee.addEventListener('pointerleave', () => { reelState.hover = false; });
+  if (scrub) scrub.addEventListener('input', () => { holdReels(); setReelPos(scrub.value / 1000 * reelState.half); });
+  // sideways trackpad swipe over the reels moves them; vertical scrolling still scrolls the page
+  reelMarquee.addEventListener('wheel', e => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault(); holdReels(); setReelPos(reelState.pos + e.deltaX);
+  }, { passive: false });
+  function reelTick(t) {
+    const dt = Math.min((t - (reelState.last || t)) / 1000, .05); reelState.last = t;
+    if (!reelState.hover && t > reelState.holdUntil && !document.hidden) setReelPos(reelState.pos + reelState.pps * dt);
+    requestAnimationFrame(reelTick);
+  }
+  requestAnimationFrame(reelTick);
+
+  // play videos only while visible; if a video file is missing, show the client name instead of a black box
   const vio = new IntersectionObserver(es => es.forEach(e => {
     e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
   }));
-  document.querySelectorAll('.reel-btn video, .thumb video').forEach(v => vio.observe(v));
+  document.querySelectorAll('.reel-btn video, .thumb video').forEach(v => {
+    vio.observe(v);
+    v.addEventListener('error', () => v.parentElement.classList.add('no-video'), { once: true });
+  });
 
   /* ---- hover card: pops up to the LEFT of a reel (flips right if there is no room) ---- */
   const tip = document.createElement('aside');
   tip.className = 'reel-tip'; tip.setAttribute('aria-hidden', 'true');
-  tip.innerHTML = '<p class="rt-eyebrow"></p><h3 class="rt-title"></h3><p class="rt-blurb"></p><ul class="rt-tags"></ul><span class="rt-cta">Want one like this? <b>→</b></span><span class="rt-ig">click to open on Instagram ↗</span>';
+  tip.innerHTML = '<p class="rt-eyebrow"></p><h3 class="rt-title"></h3><p class="rt-handle"></p><p class="rt-blurb"></p><ul class="rt-tags"></ul><span class="rt-cta">Want one like this? <b>→</b></span><span class="rt-ig">click to open on Instagram ↗</span>';
   document.body.appendChild(tip);
   const tq = s => tip.querySelector(s);
   let hoverReel = false; // auto-scroll waits while a reel card is open
@@ -182,7 +227,8 @@
     const r = REELS[el.dataset.i]; if (!r) return;
     tq('.rt-eyebrow').textContent = r.service || '';
     tq('.rt-title').textContent = r.client;
-    tq('.rt-blurb').textContent = r.blurb || 'Placeholder: add the brief and what we delivered for this reel.';
+    tq('.rt-handle').textContent = r.handle || ''; tq('.rt-handle').hidden = !r.handle;
+    tq('.rt-blurb').textContent = r.blurb || ''; tq('.rt-blurb').hidden = !r.blurb;
     tq('.rt-tags').replaceChildren(...[r.service].filter(Boolean).map(t => { const li = document.createElement('li'); li.textContent = t; return li; }));
     tq('.rt-ig').hidden = !r.url;
     const b = el.getBoundingClientRect(), w = tip.offsetWidth, gap = 16;
@@ -242,9 +288,9 @@
   }
   requestAnimationFrame(wallTick);
 
-   /* ================= services: hover to preview, click to keep open ================= */
+  /* ================= services: hover to preview, click to keep open ================= */
   const canHover = matchMedia('(hover: hover)').matches;
-  let peekY = 0;
+  let peekY = 0, lastUserScroll = 0;
   const peeking = () => !!document.querySelector('.service.peek');
   document.querySelectorAll('.service').forEach(item => {
     const btn = item.querySelector('.service-head');
@@ -255,8 +301,12 @@
       open ? sfx.open() : sfx.close();
     });
     if (!canHover) return;
-    btn.addEventListener('pointerenter', e => {
-      if (e.pointerType !== 'mouse' || item.dataset.hold || btn.getAttribute('aria-expanded') === 'true') return;
+    // open only on a real mouse movement over the title, and not while the page is being scrolled
+    // (stops titles that slide under a still cursor from flickering open and shut)
+    btn.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse' || item.classList.contains('peek') || item.dataset.hold) return;
+      if (btn.getAttribute('aria-expanded') === 'true') return;
+      if (performance.now() - lastUserScroll < 350) return;
       document.querySelectorAll('.service.peek').forEach(s => { if (s !== item) s.classList.remove('peek'); });
       item.classList.add('peek'); peekY = scrollY;
     });
@@ -264,6 +314,7 @@
   });
   // scrolling closes a hover preview (clicked ones stay open)
   addEventListener('scroll', () => {
+    if (!auto.on) lastUserScroll = performance.now();
     if (Math.abs(scrollY - peekY) < 40) return;
     document.querySelectorAll('.service.peek').forEach(s => s.classList.remove('peek'));
   }, { passive: true });

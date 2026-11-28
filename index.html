@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
   <title>Personal Branding & Video Agency in Mumbai | PotatoHead Media Works</title>
   <meta name="description" content="Done-for-you personal branding, scripting, video editing and distribution for founders and creators. Mumbai-based. Book a free 30-minute discovery call.">
   <link rel="canonical" href="https://www.YOURDOMAIN.com/">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
 
+  <!-- Open Graph / Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PotatoHead Media Works">
   <meta property="og:title" content="Personal Branding & Video Agency in Mumbai | PotatoHead Media Works">
@@ -16,21 +18,117 @@
   <meta property="og:image" content="https://www.YOURDOMAIN.com/assets/og-image.jpg"> <!-- 1200x630 -->
   <meta name="twitter:card" content="summary_large_image">
 
-  <!-- existing favicon, preloads, stylesheet, main.js -->
-  <!-- Meta Pixel script goes here -->
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/hero/mountain.jpg" as="image">
+  <link rel="preload" href="assets/fonts/studio.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
 
+  <!-- Meta Pixel: base code + event tracking -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+
+  var PIXEL_ID = '1306368621421882';
+  fbq('init', PIXEL_ID);
+  fbq('track', 'PageView');
+
+  // ---------- helpers ----------
+  function uid() { return Date.now() + '.' + Math.random().toString(36).slice(2, 10); }
+
+  // Run fn at most once per key within windowMs (per tab session)
+  function once(key, windowMs, fn) {
+    try {
+      var k = 'pix_' + key, last = Number(sessionStorage.getItem(k) || 0);
+      if (Date.now() - last < windowMs) return false;
+      sessionStorage.setItem(k, Date.now());
+    } catch (e) {}
+    fn();
+    return true;
+  }
+
+  // Advanced matching: pass email/phone (Pixel hashes them)
+  function setUserData(form) {
+    try {
+      var d = {};
+      var em = form.querySelector('input[type=email], input[name*=email i]');
+      var ph = form.querySelector('input[type=tel], input[name*=phone i], input[name*=mobile i]');
+      if (em && em.value) d.em = em.value.trim().toLowerCase();
+      if (ph && ph.value) {
+        var p = ph.value.replace(/\D/g, '');
+        if (p.length === 10) p = '91' + p;   // India country code
+        if (p) d.ph = p;
+      }
+      if (d.em || d.ph) fbq('init', PIXEL_ID, d);
+    } catch (e) {}
+  }
+
+  // Real lead = submitted form / confirmed booking only
+  function sendLead(source, form) {
+    once('lead_' + source, 60000, function () {
+      if (form) setUserData(form);
+      var eventID = uid();
+      fbq('track', 'Lead',
+        { content_name: source, value: 500, currency: 'INR' },  // set your real lead value
+        { eventID: eventID });
+      // Send the SAME eventID to your server / CAPI integration for dedupe
+    });
+  }
+
+  // Click intent = Contact (not Lead)
+  function sendContact(type) {
+    once('contact_' + type, 10000, function () {
+      fbq('track', 'Contact', { content_name: type }, { eventID: uid() });
+    });
+  }
+
+  // ---------- triggers ----------
+  // 1) Thank-you page (fires once per session)
+  if (/\/thank[-_]?you/i.test(location.pathname)) {
+    once('thankyou', 24 * 3600 * 1000, function () { sendLead('thank_you_page'); });
+  }
+
+  // 2) Form submit (skip search/login/newsletter-type forms)
+  document.addEventListener('submit', function (e) {
+    var f = e.target;
+    if (!f || !f.matches) return;
+    if (f.matches('[role=search], [data-no-track]')) return;
+    if (f.querySelector('input[type=search], input[type=password]')) return;
+    sendLead('form_submit', f);
+  }, true);
+
+  // 3) Click intent
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    var href = (a.getAttribute('href') || '').toLowerCase();
+    if (href.indexOf('wa.me') > -1 || href.indexOf('whatsapp.com') > -1) sendContact('whatsapp_click');
+    else if (href.indexOf('cal.com') > -1) sendContact('booking_click');
+    else if (href.indexOf('tel:') === 0) sendContact('call_click');
+    else if (href.indexOf('mailto:') === 0) sendContact('email_click');
+  }, true);
+  </script>
+  <!-- End Meta Pixel -->
+
+  <!-- Structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": ["Organization", "ProfessionalService"],
-        "@id": "https://www.YOURDOMAIN.com/#org",
+        "@type": ["Potatoheadmedia works", "Social Media Agenc"],
+        "@id": "https://www.potatoheadmediaworks.com/#org",
         "name": "PotatoHead Media Works",
-        "url": "https://www.YOURDOMAIN.com/",
-        "logo": "https://www.YOURDOMAIN.com/assets/potatohead-logo.png",
+        "url": "https://www.potatoheadmediaworks.com/",
+        "logo": "https://www.potatoheadmediaworks.com/assets/potatohead-logo.png",
         "description": "Personal branding and video production agency helping creators and founders build a magnetic digital presence.",
-        "address": { "@type": "PostalAddress", "addressLocality": "Mumbai", "addressRegion": "Maharashtra", "addressCountry": "IN" },
+        "address": { "@type": "Mumbai", "addressLocality": "Mumbai", "addressRegion": "Maharashtra", "addressCountry": "IN" },
         "areaServed": ["Mumbai", "India", "Worldwide"],
         "telephone": "+919136675234",
         "founder": [
@@ -75,3 +173,557 @@
   }
   </script>
 </head>
+<body>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1306368621421882&ev=PageView&noscript=1" alt=""/></noscript>
+
+  <a class="skip" href="#intro">Skip to content</a>
+
+  <header class="header">
+    <a class="wordmark" href="#home" aria-label="PotatoHead Media Works home"><img src="assets/potatohead-logo-light.png" alt="PotatoHead Media" width="475" height="118"></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation">menu <span aria-hidden="true">+</span></button>
+    <nav id="navigation" aria-label="Main navigation">
+      <a href="#work">our work</a>
+      <a href="#services">services</a>
+      <a href="#carousels">carousels</a>
+      <a href="#founders">founders</a>
+      <a class="nav-contact" href="#talk">let’s talk <span aria-hidden="true">→</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 1 · HERO -->
+    <section id="home" class="hero" aria-label="PotatoHead Media Works hero">
+      <img class="hero-bg" src="assets/hero/mountain.jpg" alt="" width="1672" height="941" fetchpriority="high">
+      <div class="hero-shade" aria-hidden="true"></div>
+      <h1 class="statement left">EVERY STORY IS A<br>WORK OF ART,<br>WAITING TO MOVE.</h1>
+      <p class="statement right"><strong>POTATOHEAD MEDIA WORKS</strong> brings your story to life.</p>
+      <div class="hero-rise" aria-hidden="true">
+        <img class="rise r1" src="assets/stock/fish.jpg" alt="" width="900" height="506">
+        <img class="rise r2" src="assets/stock/clouds.jpg" alt="" width="900" height="505">
+        <img class="rise r3" src="assets/stock/dunes.jpg" alt="" width="900" height="504">
+      </div>
+      <div id="trail" aria-hidden="true"></div>
+      <p class="hero-credit">Images via Pinterest</p>
+      <a class="hero-next" href="#intro">scroll ↓</a>
+    </section>
+
+    <!-- 2 · INTRO -->
+    <section id="intro" class="intro" aria-labelledby="intro-title">
+      <p class="eyebrow">Personal Branding &amp; Video Agency</p>
+      <h2 id="intro-title" class="mega">we make people <span>unforgettable.</span></h2>
+      <div class="intro-grid">
+        <p class="lead">End-to-end personal branding and video production - from scripting and research to edits and distribution. We don't just make content, we build legacies.</p>
+        <ul class="badges">
+          <li><strong>100% Done-For-You</strong><span>We handle everything, start to finish</span></li>
+          <li><strong>Strategy → Distribution</strong><span>End-to-end content operation</span></li>
+          <li><strong>Built Around Your Brand</strong><span>No templates. Always on-brand.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3 · WORK (auto-scrolling reels, built by main.js) -->
+    <section id="work" class="work" aria-labelledby="work-title">
+      <div class="sec-top"><p class="eyebrow">The work speaks first</p><span class="micro">tap a reel to watch it</span></div>
+      <h2 id="work-title" class="mega">less scrolling.<br><span>more watching.</span></h2>
+      <div class="marquee" id="marquee" data-pps="45" aria-label="Portfolio reels, scrolling continuously. Hover to pause.">
+        <div class="track"><div class="group" id="reel-group"></div></div>
+      </div>
+      <div class="reel-scrub-wrap"><input type="range" id="reel-scrub" class="reel-scrub" min="0" max="1000" value="0" step="1" aria-label="Scroll through the reels"></div>
+      <div class="work-bottom"><p>More where that came from.</p><a class="text-link" href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener">the rest of the camera roll ↗</a></div>
+    </section>
+
+    <!-- 4 · CLIENT LOGOS -->
+    <section id="logos" class="logos" aria-labelledby="logos-title">
+      <div class="sec-top"><p class="eyebrow">Trusted by</p></div>
+      <h2 id="logos-title" class="mega">brands we’ve <span>worked with.</span></h2>
+      <div class="marquee logo-marquee" data-pps="40" aria-label="Client logos, scrolling continuously">
+        <div class="track"><div class="group">
+          <img src="assets/placeholder/logo-01.svg" alt="Client logo 01" width="260" height="80">
+          <img src="assets/placeholder/logo-02.svg" alt="Client logo 02" width="260" height="80">
+          <img src="assets/placeholder/logo-03.svg" alt="Client logo 03" width="260" height="80">
+          <img src="assets/placeholder/logo-04.svg" alt="Client logo 04" width="260" height="80">
+          <img src="assets/placeholder/logo-05.svg" alt="Client logo 05" width="260" height="80">
+          <img src="assets/placeholder/logo-06.svg" alt="Client logo 06" width="260" height="80">
+          <img src="assets/placeholder/logo-07.svg" alt="Client logo 07" width="260" height="80">
+          <img src="assets/placeholder/logo-08.svg" alt="Client logo 08" width="260" height="80">
+          <img src="assets/placeholder/logo-09.svg" alt="Client logo 09" width="260" height="80">
+          <img src="assets/placeholder/logo-10.svg" alt="Client logo 10" width="260" height="80">
+        </div></div>
+      </div>
+      <div class="marquee logo-marquee rev" data-pps="46" aria-hidden="true">
+        <div class="track"><div class="group">
+          <img src="assets/placeholder/logo-04.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-05.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-06.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-07.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-08.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-09.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-10.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-01.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-02.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-03.svg" alt="" width="260" height="80">
+        </div></div>
+      </div>
+      <div class="marquee logo-marquee" data-pps="40" aria-hidden="true">
+        <div class="track"><div class="group">
+          <img src="assets/placeholder/logo-07.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-08.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-09.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-10.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-01.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-02.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-03.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-04.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-05.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-06.svg" alt="" width="260" height="80">
+        </div></div>
+      </div>
+    </section>
+
+    <!-- 5 · SERVICES (reel videos are filled in by main.js) -->
+    <section id="services" class="services" aria-labelledby="services-title">
+      <div class="sec-top"><p class="eyebrow">What we do</p></div>
+      <h2 id="services-title" class="mega">everything you need to <span>own your niche.</span></h2>
+      <ol class="service-list">
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv1"><span class="num">01</span><span class="sv-title">Branding &amp; Positioning</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">We craft a magnetic identity that makes you the go-to voice in your space - from positioning and messaging to visual presence.</p>
+          <div class="service-panel" id="sv1"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv2"><span class="num">02</span><span class="sv-title">Scripting &amp; Research</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">Deep-dive research and compelling scripts that resonate - engineered for retention, shareability, and authority.</p>
+          <div class="service-panel" id="sv2"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv3"><span class="num">03</span><span class="sv-title">Pre-Production</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">Full planning and coordination - shot lists, storyboards, scheduling - so every shoot runs flawlessly before the camera rolls.</p>
+          <div class="service-panel" id="sv3"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv4"><span class="num">04</span><span class="sv-title">Post-Production &amp; Edits</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">Cinematic edits, colour grading, sound design, and motion graphics - polished to platform perfection for every format.</p>
+          <div class="service-panel" id="sv4"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv5"><span class="num">05</span><span class="sv-title">Distribution</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">Strategic publishing, SEO-optimised descriptions, thumbnails, and cross-platform scheduling to maximise your reach and impact.</p>
+          <div class="service-panel" id="sv5"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv6"><span class="num">06</span><span class="sv-title">Full Agency Support</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">We embed ourselves in your brand as a true creative partner - always on, always building, always growing your presence.</p>
+          <div class="service-panel" id="sv6"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 6 · BRAND STATEMENT + PROCESS (black) -->
+    <section id="process" class="process" aria-labelledby="process-title">
+      <p class="eyebrow">The PotatoHead way</p>
+      <h2 id="process-title" class="mega">your brand.<br><span>our obsession.</span></h2>
+      <p class="lead">We treat every creator's brand like it's our own - with the same care, craft, and commitment from your first video to every one that follows.</p>
+      <h3 class="process-head">How we turn ideas into impact.</h3>
+      <ol class="steps">
+        <li><span class="num">01</span><h4>Discovery Call</h4><p>We learn your goals, audience, style, and story. No templates - every brand is built custom from the ground up.</p></li>
+        <li><span class="num">02</span><h4>Strategy &amp; Scripting</h4><p>Deep research, content pillars, scripts, and a distribution strategy tailored to your goals.</p></li>
+        <li><span class="num">03</span><h4>Production &amp; Editing</h4><p>Pre-production planning, shoot coordination, and stunning post-production that makes every video stand out.</p></li>
+        <li><span class="num">04</span><h4>Publish &amp; Grow</h4><p>We handle publishing, optimisation, and ongoing analysis to keep your brand growing every single week.</p></li>
+      </ol>
+    </section>
+
+    <!-- 7 · CAROUSELS: auto-scrolling wall -->
+    <section id="carousels" class="carousels" aria-labelledby="car-title">
+      <div class="sec-top pad"><p class="eyebrow">Swipe-worthy</p></div>
+      <h2 id="car-title" class="mega pad">carousels <br><span>that get saved.</span></h2>
+      <div class="wall" aria-label="Carousel posts, scrolling automatically. Hover to pause.">
+        <div class="wall-col down"><div class="wall-set">
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-01.jpg" alt="Carousel post 01" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-02.jpg" alt="Carousel post 02" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-03.jpg" alt="Carousel post 03" width="720" height="900" loading="lazy"></a>
+        </div></div>
+        <div class="wall-col up"><div class="wall-set">
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-04.jpg" alt="Carousel post 04" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-05.jpg" alt="Carousel post 05" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-06.jpg" alt="Carousel post 06" width="720" height="900" loading="lazy"></a>
+        </div></div>
+        <div class="wall-col down slow"><div class="wall-set">
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-07.jpg" alt="Carousel post 07" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-08.jpg" alt="Carousel post 08" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-09.jpg" alt="Carousel post 09" width="720" height="900" loading="lazy"></a>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- 8 · LONG-FORM (YouTube) -->
+    <section id="longform" class="longform" aria-labelledby="long-title">
+      <div class="long-grid">
+        <div class="long-copy">
+          <p class="eyebrow">The long view</p>
+          <h2 id="long-title" class="mega">longer<br>stories,<br><span>told properly.</span></h2>
+        </div>
+        <!-- Replace data-yt with the YouTube video ID to play inline -->
+        <a class="yt" href="https://youtu.be/BqnenWDx94Y" target="_blank" rel="noopener" data-yt="BqnenWDx94Y" aria-label="Watch our long-form video on YouTube"><img src="assets/placeholder/longform-01.jpg" alt="Long-form video thumbnail" width="960" height="540" loading="lazy"><span class="play" aria-hidden="true">▶</span></a>
+      </div>
+    </section>
+
+    <!-- 9 · RESULTS -->
+    <section id="results" class="results" aria-labelledby="results-title">
+      <div class="sec-top"><p class="eyebrow">Client results</p></div>
+      <h2 id="results-title" class="mega">real brands. <span>real growth.</span></h2>
+      <ul class="result-grid">
+        <li><p class="result">Organic content outperforming paid ads</p><blockquote>“PotatoHead changed that completely.”</blockquote><p class="who"><strong>Gunjan Malhotra</strong>Founder, Lemonade</p></li>
+        <li><p class="result">7K+ followers &amp; weekly consultation signups in 3 months</p><blockquote>“It has truly been a game-changer.”</blockquote><p class="who"><strong>Harleen Bedi</strong>Finance Creator</p></li>
+        <li><p class="result">10K+ followers, 3× reach vs. high-production content</p><blockquote>“I just approve and post.”</blockquote><p class="who"><strong>Selene Hanna</strong>Realtor</p></li>
+      </ul>
+    </section>
+
+    <!-- 10 · LET'S TALK -->
+    <section id="talk" class="talk" aria-labelledby="talk-title">
+      <p class="eyebrow">Ready to grow?</p>
+      <h2 id="talk-title" class="mega">let’s build your brand <span>together.</span></h2>
+      <div class="talk-bottom">
+        <p>Book a free 30-minute discovery call and let's talk about where you want to go - and how we get you there.</p>
+        <div class="talk-actions">
+          <a class="button solid" href="https://cal.com/potatoheadmedia/discoverycall" target="_blank" rel="noopener">Book Your Free Call <span aria-hidden="true">→</span></a>
+          <a class="button ghost" href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener">Follow on Instagram <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 · FOUNDERS (placeholders) -->
+    <section id="founders" class="founders" aria-labelledby="found-title">
+      <div class="sec-top"><p class="eyebrow">The people behind the potato</p><span class="micro">founders</span></div>
+      <h2 id="found-title" class="mega">meet the <span>founders.</span></h2>
+      <div class="founder-grid">
+        <article class="founder"><div class="portrait"><img src="assets/mascot/1.webp" alt="" width="450" height="600" loading="lazy"></div><h3>Aniket Singh</h3><p class="role">Co-founder · Role</p><p>A short line about what they do and what they care about. Replace this with the real bio.</p></article>
+        <article class="founder"><div class="portrait"><img src="assets/mascot/3.webp" alt="" width="600" height="450" loading="lazy"></div><h3>Maryam Mohsin</h3><p class="role">Co-founder · Role</p><p>A short line about what they do and what they care about. Replace this with the real bio.</p></article>
+        <article class="founder"><div class="portrait"><img src="assets/mascot/2.webp" alt="" width="450" height="600" loading="lazy"></div><h3>Christopher Mathew</h3><p class="role">Co-founder · Role</p><p>A short line about what they do and what they care about. Replace this with the real bio.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-main">
+      <a class="wordmark" href="#home" aria-label="Back to PotatoHead Media Works home"><img src="assets/potatohead-logo.png" alt="PotatoHead Media" width="475" height="118" loading="lazy"></a>
+      <p>Personal branding and video production agency helping creators and founders build magnetic digital presence. Based in Mumbai, India.</p>
+    </div>
+    <div class="footer-cols">
+      <div><h4>Services</h4><a href="#services">Personal Branding</a><a href="#services">Scripting &amp; Research</a><a href="#services">Pre-Production</a><a href="#services">Video Editing</a><a href="#services">Distribution</a></div>
+      <div><h4>Connect</h4>
+        <a href="https://cal.com/potatoheadmedia/discoverycall" target="_blank" rel="noopener">Book a Call ↗</a>
+        <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener">Instagram ↗</a>
+        <a href="https://www.linkedin.com/company/potatoheadmediaworks/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="https://wa.me/919136675234" target="_blank" rel="noopener">WhatsApp ↗</a></div>
+    </div>
+    <div class="footer-end"><p>© <span id="year">2026</span> PotatoHead Media Works. All rights reserved.</p><a href="#home">back to the top ↑</a></div>
+  </footer>
+
+  <!-- chat widget -->
+  <button id="chat-launch" class="chat-launch" type="button" aria-expanded="false" aria-controls="chat"><img src="assets/mascot/2.webp" alt="" width="52" height="39"><span>let’s chat</span></button>
+  <div id="chat" class="chat" role="dialog" aria-label="Let’s chat" hidden>
+    <div class="titlebar"><span>let’s chat!</span><button id="chat-close" type="button" aria-label="Close chat">×</button></div>
+    <div class="chat-body">
+      <div class="chat-intro"><img src="assets/mascot/3.webp" alt="" width="100" height="75"><p>Your next chapter starts with a conversation.</p></div>
+      <div class="chat-buttons">
+        <a href="https://cal.com/potatoheadmedia/discoverycall" target="_blank" rel="noopener">Say Hi!</a>
+        <a href="#work">Check out our work!</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- auto-scroll -->
+  <button id="auto-toggle" class="auto-toggle" type="button" aria-pressed="false" hidden>auto-scroll off</button>
+
+  <!-- sound -->
+  <div id="sound-prompt" class="sound-prompt" role="dialog" aria-label="Sound effects" hidden>
+    <span>Play with sound effects?</span>
+    <button type="button" id="sound-yes">Yes</button><button type="button" id="sound-no">No thanks</button>
+  </div>
+  <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false" hidden>sound off</button>
+</body>
+</html>
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="PotatoHead Media Works — personal branding and video production agency helping creators and founders build magnetic digital presence. Based in Mumbai, India.">
+  <title>PotatoHead Media Works — We make people unforgettable</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/hero/mountain.jpg" as="image">
+  <link rel="preload" href="assets/fonts/studio.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#intro">Skip to content</a>
+
+  <header class="header">
+    <a class="wordmark" href="#home" aria-label="PotatoHead Media Works home"><img src="assets/potatohead-logo-light.png" alt="PotatoHead Media" width="475" height="118"></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation">menu <span aria-hidden="true">+</span></button>
+    <nav id="navigation" aria-label="Main navigation">
+      <a href="#work">our work</a>
+      <a href="#services">services</a>
+      <a href="#carousels">carousels</a>
+      <a href="#founders">founders</a>
+      <a class="nav-contact" href="#talk">let’s talk <span aria-hidden="true">→</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 1 · HERO -->
+    <section id="home" class="hero" aria-label="PotatoHead Media Works hero">
+      <img class="hero-bg" src="assets/hero/mountain.jpg" alt="" width="1672" height="941" fetchpriority="high">
+      <div class="hero-shade" aria-hidden="true"></div>
+      <h1 class="statement left">EVERY STORY IS A<br>WORK OF ART,<br>WAITING TO MOVE.</h1>
+      <p class="statement right"><strong>POTATOHEAD MEDIA WORKS</strong> brings your story to life.</p>
+      <div class="hero-rise" aria-hidden="true">
+        <img class="rise r1" src="assets/stock/fish.jpg" alt="" width="900" height="506">
+        <img class="rise r2" src="assets/stock/clouds.jpg" alt="" width="900" height="505">
+        <img class="rise r3" src="assets/stock/dunes.jpg" alt="" width="900" height="504">
+      </div>
+      <div id="trail" aria-hidden="true"></div>
+      <p class="hero-credit">Images via Pinterest</p>
+      <a class="hero-next" href="#intro">scroll ↓</a>
+    </section>
+
+    <!-- 2 · INTRO -->
+    <section id="intro" class="intro" aria-labelledby="intro-title">
+      <p class="eyebrow">Personal Branding &amp; Video Agency</p>
+      <h2 id="intro-title" class="mega">we make people <span>unforgettable.</span></h2>
+      <div class="intro-grid">
+        <p class="lead">End-to-end personal branding and video production - from scripting and research to edits and distribution. We don't just make content, we build legacies.</p>
+        <ul class="badges">
+          <li><strong>100% Done-For-You</strong><span>We handle everything, start to finish</span></li>
+          <li><strong>Strategy → Distribution</strong><span>End-to-end content operation</span></li>
+          <li><strong>Built Around Your Brand</strong><span>No templates. Always on-brand.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3 · WORK (auto-scrolling reels, built by main.js) -->
+    <section id="work" class="work" aria-labelledby="work-title">
+      <div class="sec-top"><p class="eyebrow">The work speaks first</p><span class="micro">tap a reel to watch it</span></div>
+      <h2 id="work-title" class="mega">less scrolling.<br><span>more watching.</span></h2>
+      <div class="marquee" id="marquee" data-pps="45" aria-label="Portfolio reels, scrolling continuously. Hover to pause.">
+        <div class="track"><div class="group" id="reel-group"></div></div>
+      </div>
+      <div class="reel-scrub-wrap"><input type="range" id="reel-scrub" class="reel-scrub" min="0" max="1000" value="0" step="1" aria-label="Scroll through the reels"></div>
+      <div class="work-bottom"><p>More where that came from.</p><a class="text-link" href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener">the rest of the camera roll ↗</a></div>
+    </section>
+
+    <!-- 4 · CLIENT LOGOS -->
+    <section id="logos" class="logos" aria-labelledby="logos-title">
+      <div class="sec-top"><p class="eyebrow">Trusted by</p></div>
+      <h2 id="logos-title" class="mega">brands we’ve <span>worked with.</span></h2>
+      <div class="marquee logo-marquee" data-pps="40" aria-label="Client logos, scrolling continuously">
+        <div class="track"><div class="group">
+          <img src="assets/placeholder/logo-01.svg" alt="Client logo 01" width="260" height="80">
+          <img src="assets/placeholder/logo-02.svg" alt="Client logo 02" width="260" height="80">
+          <img src="assets/placeholder/logo-03.svg" alt="Client logo 03" width="260" height="80">
+          <img src="assets/placeholder/logo-04.svg" alt="Client logo 04" width="260" height="80">
+          <img src="assets/placeholder/logo-05.svg" alt="Client logo 05" width="260" height="80">
+          <img src="assets/placeholder/logo-06.svg" alt="Client logo 06" width="260" height="80">
+          <img src="assets/placeholder/logo-07.svg" alt="Client logo 07" width="260" height="80">
+          <img src="assets/placeholder/logo-08.svg" alt="Client logo 08" width="260" height="80">
+          <img src="assets/placeholder/logo-09.svg" alt="Client logo 09" width="260" height="80">
+          <img src="assets/placeholder/logo-10.svg" alt="Client logo 10" width="260" height="80">
+        </div></div>
+      </div>
+      <div class="marquee logo-marquee rev" data-pps="46" aria-hidden="true">
+        <div class="track"><div class="group">
+          <img src="assets/placeholder/logo-04.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-05.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-06.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-07.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-08.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-09.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-10.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-01.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-02.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-03.svg" alt="" width="260" height="80">
+        </div></div>
+      </div>
+      <div class="marquee logo-marquee" data-pps="40" aria-hidden="true">
+        <div class="track"><div class="group">
+          <img src="assets/placeholder/logo-07.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-08.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-09.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-10.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-01.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-02.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-03.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-04.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-05.svg" alt="" width="260" height="80">
+          <img src="assets/placeholder/logo-06.svg" alt="" width="260" height="80">
+        </div></div>
+      </div>
+    </section>
+
+    <!-- 5 · SERVICES (reel videos are filled in by main.js) -->
+    <section id="services" class="services" aria-labelledby="services-title">
+      <div class="sec-top"><p class="eyebrow">What we do</p></div>
+      <h2 id="services-title" class="mega">everything you need to <span>own your niche.</span></h2>
+      <ol class="service-list">
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv1"><span class="num">01</span><span class="sv-title">Branding &amp; Positioning</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">We craft a magnetic identity that makes you the go-to voice in your space - from positioning and messaging to visual presence.</p>
+          <div class="service-panel" id="sv1"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv2"><span class="num">02</span><span class="sv-title">Scripting &amp; Research</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">Deep-dive research and compelling scripts that resonate - engineered for retention, shareability, and authority.</p>
+          <div class="service-panel" id="sv2"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv3"><span class="num">03</span><span class="sv-title">Pre-Production</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">Full planning and coordination - shot lists, storyboards, scheduling - so every shoot runs flawlessly before the camera rolls.</p>
+          <div class="service-panel" id="sv3"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv4"><span class="num">04</span><span class="sv-title">Post-Production &amp; Edits</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">Cinematic edits, colour grading, sound design, and motion graphics - polished to platform perfection for every format.</p>
+          <div class="service-panel" id="sv4"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv5"><span class="num">05</span><span class="sv-title">Distribution</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">Strategic publishing, SEO-optimised descriptions, thumbnails, and cross-platform scheduling to maximise your reach and impact.</p>
+          <div class="service-panel" id="sv5"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+        <li class="service">
+          <button class="service-head" type="button" aria-expanded="false" aria-controls="sv6"><span class="num">06</span><span class="sv-title">Full Agency Support</span><span class="plus" aria-hidden="true">+</span></button>
+          <p class="sv-desc">We embed ourselves in your brand as a true creative partner - always on, always building, always growing your presence.</p>
+          <div class="service-panel" id="sv6"><div class="panel-inner"><div class="thumbs"></div></div></div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 6 · BRAND STATEMENT + PROCESS (black) -->
+    <section id="process" class="process" aria-labelledby="process-title">
+      <p class="eyebrow">The PotatoHead way</p>
+      <h2 id="process-title" class="mega">your brand.<br><span>our obsession.</span></h2>
+      <p class="lead">We treat every creator's brand like it's our own - with the same care, craft, and commitment from your first video to every one that follows.</p>
+      <h3 class="process-head">How we turn ideas into impact.</h3>
+      <ol class="steps">
+        <li><span class="num">01</span><h4>Discovery Call</h4><p>We learn your goals, audience, style, and story. No templates - every brand is built custom from the ground up.</p></li>
+        <li><span class="num">02</span><h4>Strategy &amp; Scripting</h4><p>Deep research, content pillars, scripts, and a distribution strategy tailored to your goals.</p></li>
+        <li><span class="num">03</span><h4>Production &amp; Editing</h4><p>Pre-production planning, shoot coordination, and stunning post-production that makes every video stand out.</p></li>
+        <li><span class="num">04</span><h4>Publish &amp; Grow</h4><p>We handle publishing, optimisation, and ongoing analysis to keep your brand growing every single week.</p></li>
+      </ol>
+    </section>
+
+    <!-- 7 · CAROUSELS: auto-scrolling wall -->
+    <section id="carousels" class="carousels" aria-labelledby="car-title">
+      <div class="sec-top pad"><p class="eyebrow">Swipe-worthy</p></div>
+      <h2 id="car-title" class="mega pad">carousels <br><span>that get saved.</span></h2>
+      <div class="wall" aria-label="Carousel posts, scrolling automatically. Hover to pause.">
+        <div class="wall-col down"><div class="wall-set">
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-01.jpg" alt="Carousel post 01" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-02.jpg" alt="Carousel post 02" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-03.jpg" alt="Carousel post 03" width="720" height="900" loading="lazy"></a>
+        </div></div>
+        <div class="wall-col up"><div class="wall-set">
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-04.jpg" alt="Carousel post 04" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-05.jpg" alt="Carousel post 05" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-06.jpg" alt="Carousel post 06" width="720" height="900" loading="lazy"></a>
+        </div></div>
+        <div class="wall-col down slow"><div class="wall-set">
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-07.jpg" alt="Carousel post 07" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-08.jpg" alt="Carousel post 08" width="720" height="900" loading="lazy"></a>
+          <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener"><img src="assets/placeholder/carousel-09.jpg" alt="Carousel post 09" width="720" height="900" loading="lazy"></a>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- 8 · LONG-FORM (YouTube) -->
+    <section id="longform" class="longform" aria-labelledby="long-title">
+      <div class="long-grid">
+        <div class="long-copy">
+          <p class="eyebrow">The long view</p>
+          <h2 id="long-title" class="mega">longer<br>stories,<br><span>told properly.</span></h2>
+        </div>
+        <!-- Replace data-yt with the YouTube video ID to play inline -->
+        <a class="yt" href="https://youtu.be/BqnenWDx94Y" target="_blank" rel="noopener" data-yt="BqnenWDx94Y" aria-label="Watch our long-form video on YouTube"><img src="assets/placeholder/longform-01.jpg" alt="Long-form video thumbnail" width="960" height="540" loading="lazy"><span class="play" aria-hidden="true">▶</span></a>
+      </div>
+    </section>
+
+    <!-- 9 · RESULTS -->
+    <section id="results" class="results" aria-labelledby="results-title">
+      <div class="sec-top"><p class="eyebrow">Client results</p></div>
+      <h2 id="results-title" class="mega">real brands. <span>real growth.</span></h2>
+      <ul class="result-grid">
+        <li><p class="result">Organic content outperforming paid ads</p><blockquote>“PotatoHead changed that completely.”</blockquote><p class="who"><strong>Gunjan Malhotra</strong>Founder, Lemonade</p></li>
+        <li><p class="result">7K+ followers &amp; weekly consultation signups in 3 months</p><blockquote>“It has truly been a game-changer.”</blockquote><p class="who"><strong>Harleen Bedi</strong>Finance Creator</p></li>
+        <li><p class="result">10K+ followers, 3× reach vs. high-production content</p><blockquote>“I just approve and post.”</blockquote><p class="who"><strong>Selene Hanna</strong>Realtor</p></li>
+      </ul>
+    </section>
+
+    <!-- 10 · LET'S TALK -->
+    <section id="talk" class="talk" aria-labelledby="talk-title">
+      <p class="eyebrow">Ready to grow?</p>
+      <h2 id="talk-title" class="mega">let’s build your brand <span>together.</span></h2>
+      <div class="talk-bottom">
+        <p>Book a free 30-minute discovery call and let's talk about where you want to go - and how we get you there.</p>
+        <div class="talk-actions">
+          <a class="button solid" href="https://cal.com/potatoheadmedia/discoverycall" target="_blank" rel="noopener">Book Your Free Call <span aria-hidden="true">→</span></a>
+          <a class="button ghost" href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener">Follow on Instagram <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 · FOUNDERS (placeholders) -->
+    <section id="founders" class="founders" aria-labelledby="found-title">
+      <div class="sec-top"><p class="eyebrow">The people behind the potato</p><span class="micro">founders</span></div>
+      <h2 id="found-title" class="mega">meet the <span>founders.</span></h2>
+      <div class="founder-grid">
+        <article class="founder"><div class="portrait"><img src="assets/mascot/1.webp" alt="" width="450" height="600" loading="lazy"></div><h3>Aniket Singh</h3><p class="role">Co-founder · Role</p><p>A short line about what they do and what they care about. Replace this with the real bio.</p></article>
+        <article class="founder"><div class="portrait"><img src="assets/mascot/3.webp" alt="" width="600" height="450" loading="lazy"></div><h3>Maryam Mohsin</h3><p class="role">Co-founder · Role</p><p>A short line about what they do and what they care about. Replace this with the real bio.</p></article>
+        <article class="founder"><div class="portrait"><img src="assets/mascot/2.webp" alt="" width="450" height="600" loading="lazy"></div><h3>Christopher Mathew</h3><p class="role">Co-founder · Role</p><p>A short line about what they do and what they care about. Replace this with the real bio.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-main">
+      <a class="wordmark" href="#home" aria-label="Back to PotatoHead Media Works home"><img src="assets/potatohead-logo.png" alt="PotatoHead Media" width="475" height="118" loading="lazy"></a>
+      <p>Personal branding and video production agency helping creators and founders build magnetic digital presence. Based in Mumbai, India.</p>
+    </div>
+    <div class="footer-cols">
+      <div><h4>Services</h4><a href="#services">Personal Branding</a><a href="#services">Scripting &amp; Research</a><a href="#services">Pre-Production</a><a href="#services">Video Editing</a><a href="#services">Distribution</a></div>
+      <div><h4>Connect</h4>
+        <a href="https://cal.com/potatoheadmedia/discoverycall" target="_blank" rel="noopener">Book a Call ↗</a>
+        <a href="https://www.instagram.com/potatoheadmedia" target="_blank" rel="noopener">Instagram ↗</a>
+        <a href="https://www.linkedin.com/company/potatoheadmediaworks/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="https://wa.me/919136675234" target="_blank" rel="noopener">WhatsApp ↗</a></div>
+    </div>
+    <div class="footer-end"><p>© <span id="year">2025</span> PotatoHead Media Works. All rights reserved.</p><a href="#home">back to the top ↑</a></div>
+  </footer>
+
+  <!-- chat widget -->
+  <button id="chat-launch" class="chat-launch" type="button" aria-expanded="false" aria-controls="chat"><img src="assets/mascot/2.webp" alt="" width="52" height="39"><span>let’s chat</span></button>
+  <div id="chat" class="chat" role="dialog" aria-label="Let’s chat" hidden>
+    <div class="titlebar"><span>let’s chat!</span><button id="chat-close" type="button" aria-label="Close chat">×</button></div>
+    <div class="chat-body">
+      <div class="chat-intro"><img src="assets/mascot/3.webp" alt="" width="100" height="75"><p>Your next chapter starts with a conversation.</p></div>
+      <div class="chat-buttons">
+        <a href="https://cal.com/potatoheadmedia/discoverycall" target="_blank" rel="noopener">Say Hi!</a>
+        <a href="#work">Check out our work!</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- auto-scroll -->
+  <button id="auto-toggle" class="auto-toggle" type="button" aria-pressed="false" hidden>auto-scroll off</button>
+
+  <!-- sound -->
+  <div id="sound-prompt" class="sound-prompt" role="dialog" aria-label="Sound effects" hidden>
+    <span>Play with sound effects?</span>
+    <button type="button" id="sound-yes">Yes</button><button type="button" id="sound-no">No thanks</button>
+  </div>
+  <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false" hidden>sound off</button>
+</body>
+</html>

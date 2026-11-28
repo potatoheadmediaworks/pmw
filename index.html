@@ -1,3 +1,97 @@
+<!-- Meta Pixel: base code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+
+var PIXEL_ID = '1306368621421882';
+fbq('init', PIXEL_ID);
+fbq('track', 'PageView');
+
+// ---------- helpers ----------
+function uid() { return Date.now() + '.' + Math.random().toString(36).slice(2, 10); }
+
+// Run fn at most once per key within windowMs (per tab session)
+function once(key, windowMs, fn) {
+  try {
+    var k = 'pix_' + key, last = Number(sessionStorage.getItem(k) || 0);
+    if (Date.now() - last < windowMs) return false;
+    sessionStorage.setItem(k, Date.now());
+  } catch (e) {}
+  fn();
+  return true;
+}
+
+// Advanced matching: pass email/phone (Pixel hashes them)
+function setUserData(form) {
+  try {
+    var d = {};
+    var em = form.querySelector('input[type=email], input[name*=email i]');
+    var ph = form.querySelector('input[type=tel], input[name*=phone i], input[name*=mobile i]');
+    if (em && em.value) d.em = em.value.trim().toLowerCase();
+    if (ph && ph.value) {
+      var p = ph.value.replace(/\D/g, '');
+      if (p.length === 10) p = '91' + p;   // India country code
+      if (p) d.ph = p;
+    }
+    if (d.em || d.ph) fbq('init', PIXEL_ID, d);
+  } catch (e) {}
+}
+
+// Real lead = submitted form / confirmed booking only
+function sendLead(source, form) {
+  once('lead_' + source, 60000, function () {
+    if (form) setUserData(form);
+    var eventID = uid();
+    fbq('track', 'Lead',
+      { content_name: source, value: 500, currency: 'INR' },  // set your real lead value
+      { eventID: eventID });
+    // Send the SAME eventID to your server / CAPI integration for dedupe
+  });
+}
+
+// Click intent = Contact (not Lead)
+function sendContact(type) {
+  once('contact_' + type, 10000, function () {
+    fbq('track', 'Contact', { content_name: type }, { eventID: uid() });
+  });
+}
+
+// ---------- triggers ----------
+// 1) Thank-you page (fires once per session)
+if (/\/thank[-_]?you/i.test(location.pathname)) {
+  once('thankyou', 24 * 3600 * 1000, function () { sendLead('thank_you_page'); });
+}
+
+// 2) Form submit (skip search/login/newsletter-type forms)
+document.addEventListener('submit', function (e) {
+  var f = e.target;
+  if (!f || !f.matches) return;
+  if (f.matches('[role=search], [data-no-track]')) return;
+  if (f.querySelector('input[type=search], input[type=password]')) return;
+  sendLead('form_submit', f);
+}, true);
+
+// 3) Click intent
+document.addEventListener('click', function (e) {
+  var a = e.target.closest && e.target.closest('a[href]');
+  if (!a) return;
+  var href = (a.getAttribute('href') || '').toLowerCase();
+  if (href.indexOf('wa.me') > -1 || href.indexOf('whatsapp.com') > -1) sendContact('whatsapp_click');
+  else if (href.indexOf('cal.com') > -1) sendContact('booking_click');
+  else if (href.indexOf('tel:') === 0) sendContact('call_click');
+  else if (href.indexOf('mailto:') === 0) sendContact('email_click');
+}, true);
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1306368621421882&ev=PageView&noscript=1"/></noscript>
+
+
 <!doctype html>
 <html lang="en">
 <head>
